@@ -46,12 +46,10 @@ function showPopup(prize) {
   popupPrizeText.innerHTML = `<strong>${prize.text}</strong>`;
   popupPrizeImage.src = prizeImage.src;
   popup.style.display = 'flex';
-
-  // 停止背景音乐，播放中奖音效
-  bgMusic.pause();
-  bgMusic.currentTime = 0;
-  winSound.play().catch(err => console.warn("Audio play failed:", err));
-
+  try {
+    bgMusic.pause(); // 停止背景音乐
+    winSound.play(); // 播放中奖音效
+  } catch (e) {}
   const code = 'RB' + Math.floor(100000 + Math.random() * 900000);
   claimCode.value = code;
   claimCode.style.color = '#111';
@@ -60,18 +58,28 @@ function showPopup(prize) {
 }
 
 document.getElementById('popupClose').onclick = () => {
-  // 弹窗不可关闭（根据需求已取消）
-  // popup.style.display = 'none';
+  popup.style.display = 'none';
 };
 
 let isDrawing = false;
 let revealed = false;
 let scratchDisabled = localStorage.getItem('scratched') === 'yes';
 let resetTap = 0;
+let musicStarted = false;
+
+function startBgMusic() {
+  if (!musicStarted) {
+    bgMusic.play().catch(() => {}); // iOS 必须用户交互后触发
+    musicStarted = true;
+  }
+}
 
 function handleScratch(e) {
   if (scratchDisabled || revealed) return;
   if (!isDrawing) return;
+
+  startBgMusic(); // 刮的时候尝试启动音乐（必须有用户交互）
+
   e.preventDefault();
   const rect = canvas.getBoundingClientRect();
   const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
@@ -116,11 +124,3 @@ function initCanvas() {
 }
 
 initCanvas();
-
-// 用户点击按钮播放背景音乐（防止 iOS 静音限制）
-const startButton = document.getElementById('startButton');
-if (startButton) {
-  startButton.addEventListener('click', () => {
-    bgMusic.play().catch(err => console.warn("BG music play failed:", err));
-  });
-}
