@@ -142,3 +142,13 @@ if (startButton) {
 } else {
   document.addEventListener('click', startBgMusicOnce, { once: true });
 }
+// 防止右键菜单
+document.addEventListener('contextmenu', e => {
+  e.preventDefault();
+});
+
+// 防止选中拖动
+document.addEventListener('selectstart', e => {
+  e.preventDefault();
+});
+
