@@ -166,3 +166,16 @@ header h1 {
   from { transform: scale(0.7); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+/* 防止用户通过长按拖动、选中文字、或拖动图片查看奖品 */
+#scratchCanvas {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  touch-action: none;
+}
+#prizeLayer img, #prizeLayer p {
+  pointer-events: none;
+  user-select: none;
+}
+
