@@ -1,108 +1,131 @@
+/* style.css */
+
 body {
-  background-color: #1a1a1a;
-  color: #fff;
-  font-family: Arial, sans-serif;
   margin: 0;
-  padding: 0;
-  text-align: center;
+  font-family: Arial, sans-serif;
+  background-color: #111;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
 .container {
-  max-width: 400px;
-  margin: 0 auto;
+  text-align: center;
   padding: 20px;
+  background-color: #222;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  width: 100%;
+  max-width: 400px;
 }
 
 .logo {
-  width: 160px;
+  width: 120px;
   margin-bottom: 10px;
 }
 
 .title {
-  font-size: 22px;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  font-size: 20px;
+  color: #f0c040;
 }
 
-#scratchCanvas {
-  border: 2px solid #fff;
-  background-color: #999;
-  display: block;
-  margin: 0 auto;
-  touch-action: none;
-  cursor: pointer;
+canvas {
   border-radius: 10px;
+  width: 100%;
+  height: auto;
+  max-width: 300px;
+  max-height: 150px;
 }
 
 #prizeLayer {
   position: absolute;
-  top: 150px;
+  top: 160px;
   left: 50%;
   transform: translateX(-50%);
-  width: 300px;
+  text-align: center;
+  width: 100%;
   pointer-events: none;
 }
 
 #prizeImage {
-  width: 100px;
-  margin-top: 10px;
-  transition: opacity 0.5s ease;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 10px;
+  transition: opacity 0.6s ease;
 }
 
 #prizeText {
   font-size: 18px;
-  margin-top: 8px;
-  transition: opacity 0.5s ease;
   font-weight: bold;
+  transition: opacity 0.6s ease;
 }
 
 #popupOverlay {
   display: none;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 999;
 }
 
 #popupBox {
-  background: rgba(255, 255, 255, 0.95);
-  color: #000;
+  background: rgba(255, 255, 255, 0.9);
   padding: 20px;
-  border-radius: 12px;
+  border-radius: 10px;
   text-align: center;
-  width: 90%;
-  max-width: 300px;
+  color: #000;
 }
 
-#popupBox img {
-  width: 80px;
+#popupPrizeImage {
+  width: 100px;
+  height: 100px;
   margin-bottom: 10px;
 }
 
-#popupBox p {
-  margin: 6px 0;
+#popupPrizeText {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
-#copyCodeBtn, #popupClose {
-  margin: 5px;
-  padding: 8px 12px;
-  border: none;
-  background-color: #ff4d4d;
-  color: white;
+#claimCode {
+  font-size: 18px;
+  background: #f0f0f0;
+  padding: 5px 10px;
   border-radius: 5px;
+  margin-bottom: 10px;
+  display: inline-block;
+}
+
+#copyCodeBtn,
+#popupClose {
+  margin: 5px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: #333;
+  color: #fff;
   cursor: pointer;
+}
+
+#copyCodeBtn:hover,
+#popupClose:hover {
+  background-color: #555;
 }
 
 #secretResetArea {
   position: fixed;
-  bottom: 8px;
-  right: 8px;
+  right: 5px;
+  bottom: 5px;
   width: 20px;
   height: 20px;
-  opacity: 0;
+  background-color: transparent;
   z-index: 9999;
+  cursor: pointer;
 }
