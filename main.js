@@ -14,9 +14,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let isDrawing = false;
   let hasRevealed = false;
-  let scratchCount = 0;
   let resetClickCount = 0;
-  let alreadyScratched = false;
+  let selectedPrize = null;
+
+  const STORAGE_KEY = "hasScratched";
 
   const prizes = [
     { name: "ANGPAO $3 🧧", weight: 10 },
@@ -28,8 +29,6 @@ document.addEventListener("DOMContentLoaded", function () {
   ];
 
   const prizeImageUrl = "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png";
-
-  let selectedPrize = null;
 
   function pickPrize() {
     const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
@@ -54,14 +53,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function resetGame() {
     hasRevealed = false;
-    scratchCount = 0;
-    alreadyScratched = false;
+    localStorage.removeItem(STORAGE_KEY);
     selectedPrize = pickPrize();
 
+    // Fill canvas with gray
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#999";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // Hide prize layer until scratched
     prizeLayer.style.visibility = "hidden";
     prizeImage.src = prizeImageUrl;
     prizeText.textContent = selectedPrize.name;
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function revealPrize() {
     hasRevealed = true;
-    alreadyScratched = true;
+    localStorage.setItem(STORAGE_KEY, "true");
     prizeLayer.style.visibility = "visible";
     showPopup();
   }
@@ -88,43 +88,48 @@ document.addEventListener("DOMContentLoaded", function () {
     const rect = canvas.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
     return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
     };
   }
 
   function draw(e) {
-    if (!isDrawing || hasRevealed || alreadyScratched) return;
+    if (!isDrawing || hasRevealed || localStorage.getItem(STORAGE_KEY)) return;
+
     const pos = getCanvasPosition(e);
     ctx.globalCompositeOperation = "destination-out";
     ctx.beginPath();
-    ctx.arc(pos.x, pos.y, 12, 0, Math.PI * 2);
+    ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
     ctx.fill();
     ctx.closePath();
 
-    scratchCount++;
-    if (getFilledPercentage() > 80) {
+    if (getFilledPercentage() > 80 && !hasRevealed) {
       revealPrize();
     }
   }
 
   canvas.addEventListener("mousedown", e => {
-    if (alreadyScratched) return;
+    if (localStorage.getItem(STORAGE_KEY)) return;
     isDrawing = true;
     draw(e);
   });
-  canvas.addEventListener("mouseup", () => isDrawing = false);
+
   canvas.addEventListener("mousemove", draw);
+  canvas.addEventListener("mouseup", () => isDrawing = false);
+  canvas.addEventListener("mouseleave", () => isDrawing = false);
 
   canvas.addEventListener("touchstart", e => {
-    if (alreadyScratched) return;
+    if (localStorage.getItem(STORAGE_KEY)) return;
     isDrawing = true;
     draw(e);
     e.preventDefault();
   });
-  canvas.addEventListener("touchend", () => isDrawing = false);
+
   canvas.addEventListener("touchmove", draw);
+  canvas.addEventListener("touchend", () => isDrawing = false);
 
   popupClose.addEventListener("click", () => {
     popupOverlay.style.display = "none";
@@ -144,5 +149,11 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Init
-  resetGame();
+  if (!localStorage.getItem(STORAGE_KEY)) {
+    resetGame();
+  } else {
+    // 已经刮过则直接显示遮罩但不能再次刮
+    ctx.fillStyle = "#999";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
 });
