@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const canvas = document.getElementById("scratchCanvas");
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
   const prizeLayer = document.getElementById("prizeLayer");
   const prizeImage = document.getElementById("prizeImage");
   const prizeText = document.getElementById("prizeText");
@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let isDrawing = false;
   let hasRevealed = false;
-  let scratchCount = 0;
   let resetClickCount = 0;
 
   const prizes = [
@@ -53,21 +52,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function resetGame() {
     hasRevealed = false;
-    scratchCount = 0;
     selectedPrize = pickPrize();
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#999";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    prizeLayer.style.visibility = "hidden";
+    prizeLayer.style.visibility = "visible";
     prizeImage.src = prizeImageUrl;
     prizeText.textContent = selectedPrize.name;
   }
 
   function revealPrize() {
     hasRevealed = true;
-    prizeLayer.style.visibility = "visible";
     showPopup();
   }
 
@@ -81,29 +78,36 @@ document.addEventListener("DOMContentLoaded", function () {
     return (cleared / (canvas.width * canvas.height)) * 100;
   }
 
-  canvas.addEventListener("mousedown", e => isDrawing = true);
-  canvas.addEventListener("mouseup", () => isDrawing = false);
-  canvas.addEventListener("mousemove", draw);
-  canvas.addEventListener("touchstart", e => { isDrawing = true; e.preventDefault(); });
-  canvas.addEventListener("touchend", () => isDrawing = false);
-  canvas.addEventListener("touchmove", draw);
+  function getCanvasPosition(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  }
 
   function draw(e) {
     if (!isDrawing || hasRevealed) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+    const pos = getCanvasPosition(e);
     ctx.globalCompositeOperation = "destination-out";
     ctx.beginPath();
-    ctx.arc(x, y, 12, 0, Math.PI * 2);
+    ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
     ctx.fill();
     ctx.closePath();
 
-    scratchCount++;
     if (getFilledPercentage() > 80) {
       revealPrize();
     }
   }
+
+  canvas.addEventListener("mousedown", e => { isDrawing = true; draw(e); });
+  canvas.addEventListener("mouseup", () => { isDrawing = false; });
+  canvas.addEventListener("mousemove", draw);
+  canvas.addEventListener("touchstart", e => { isDrawing = true; draw(e); e.preventDefault(); });
+  canvas.addEventListener("touchend", () => { isDrawing = false; });
+  canvas.addEventListener("touchmove", draw);
 
   popupClose.addEventListener("click", () => {
     popupOverlay.style.display = "none";
