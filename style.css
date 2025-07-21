@@ -61,6 +61,16 @@ h1 {
   overflow: hidden;
 }
 
+#prizeLayer,
+#prizeLayer * {
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  pointer-events: none;
+}
+
 #prizeImage {
   width: 80px;
   height: auto;
