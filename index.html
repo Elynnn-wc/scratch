@@ -5,11 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scratch & Win</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    #popupBox {
+      position: relative;
+    }
+
+    #popupClose {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+
+    #popupClose:hover {
+      color: red;
+    }
+  </style>
 </head>
 <body>
   <header>
     <img src="https://royalebet.net/front/include/images/royalebet.png" alt="Company Logo">
-    <h1>🎉 Scratch & Win 🧧 </h1>
+    <h1>🎉 Scratch & Win with LiveBet777</h1>
   </header>
 
   <p id="instruction">👉 Use your finger to scratch and reveal!</p>
@@ -29,7 +49,9 @@
 
   <div id="popupOverlay">
     <div id="popupBox">
-      <span id="popupClose">&times;</span>
+      <!-- ❌ 按钮在右上角 -->
+      <button id="popupClose">&times;</button>
+
       <h2>🎉 You’ve Won a Prize!</h2>
       <img id="popupPrizeImage" src="https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png" alt="Prize" />
       <p id="popupPrizeText"><strong></strong></p>
@@ -42,13 +64,13 @@
         </div>
       </div>
 
-      <!-- ✅ 红色提醒 -->
+      <!-- 红色提醒 -->
       <p style="color: red; font-weight: bold; margin-top: 15px;">
         ⚠️ Please take a screenshot and send it to admin before closing.
       </p>
 
-      <!-- ✅ Close 按钮 -->
-      <button id="popupClose" style="margin-top: 5px;">X</button>
+      <!-- 可保留额外 Close 按钮（可删） -->
+      <!-- <button id="popupClose" style="margin-top: 10px;">Close</button> -->
     </div>
   </div>
 
