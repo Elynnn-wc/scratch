@@ -1,37 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Scratch & Win</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <img src="https://royalebet.net/front/include/images/royalebet.png" alt="Logo" class="logo">
-    <div class="title">🎉 Scratch & Win Lucky ANGPAO 🧧</div>
+<div class="container">
+  <img src="logo.png" class="logo" alt="Logo">
+  <div class="title">🎁 Scratch & Win Your Angpao! 🎁</div>
 
-    <canvas id="scratchCanvas" width="300" height="150"></canvas>
+  <!-- 刮刮卡 Canvas -->
+  <canvas id="scratchCanvas" width="300" height="150"></canvas>
 
-    <div id="prizeLayer">
-      <img id="prizeImage" src="" alt="Prize">
-      <div id="prizeText"></div>
-    </div>
+  <!-- 奖品显示区 -->
+  <div id="prizeLayer">
+    <img id="prizeImage" src="" alt="Prize Image">
+    <div id="prizeText"></div>
   </div>
+</div>
 
-  <div id="popupOverlay">
-    <div id="popupBox">
-      <img id="popupPrizeImage" src="" alt="Prize">
-      <div id="popupPrizeText"></div>
-      <p style="margin-bottom:5px; font-weight:bold;">🎟️ Claim Code:</p>
-      <div id="claimCode"></div>
-      <button id="copyCodeBtn">Copy</button>
-      <button id="popupClose">Close</button>
-    </div>
+<!-- 弹窗 -->
+<div id="popupOverlay">
+  <div id="popupBox">
+    <img id="popupPrizeImage" src="" alt="Popup Prize">
+    <div id="popupPrizeText"></div>
+    <div id="claimCode"></div>
+    <button id="copyCodeBtn">Copy Code</button>
+    <button id="popupClose">Close</button>
   </div>
+</div>
 
-  <div id="secretResetArea"></div>
-
-  <script src="main.js"></script>
-</body>
-</html>
+<!-- 隐藏重置按钮 -->
+<div id="secretResetArea"></div>
