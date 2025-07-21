@@ -1,149 +1,168 @@
-/* style.css */
-
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #111;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #111;
   color: #fff;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   min-height: 100vh;
-}
-
-.container {
-  text-align: center;
+  margin: 0;
   padding: 20px;
-  background-color: #222;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-  width: 100%;
-  max-width: 400px;
-  position: relative;
 }
 
-.logo {
-  width: 120px;
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+header img {
+  height: 60px;
   margin-bottom: 10px;
 }
 
-.title {
-  margin-bottom: 20px;
-  font-size: 20px;
-  color: #f0c040;
+header h1 {
+  font-size: 24px;
+  margin: 0;
+  color: #fff;
 }
 
-canvas {
-  border-radius: 10px;
-  width: 100%;
-  height: auto;
-  max-width: 300px;
-  max-height: 150px;
-  background-color: #aaa;
-  display: block;
-  margin: 0 auto;
+#scratchContainer {
+  position: relative;
+  width: 300px;
+  height: 150px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+#instruction {
+  margin-bottom: 25px;
+  font-size: 16px;
+  color: #ccc;
+  text-align: center;
 }
 
 #prizeLayer {
   position: absolute;
-  top: 160px;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
+  top: 0;
+  left: 0;
   width: 100%;
-  pointer-events: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
   z-index: 1;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-#prizeImage,
-#prizeText {
-  user-select: none;
-  -webkit-user-drag: none;
-  -webkit-user-select: none;
-  pointer-events: none;
 }
 
 #prizeImage {
-  width: 80px;
-  height: 80px;
+  width: 50px;
+  height: 50px;
   margin-bottom: 10px;
-  transition: opacity 0.6s ease;
-  opacity: 0;
 }
 
 #prizeText {
-  font-size: 18px;
+  font-size: 16px;
+  color: #333;
   font-weight: bold;
-  transition: opacity 0.6s ease;
-  opacity: 0;
+}
+
+#scratchCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  cursor: pointer;
 }
 
 #popupOverlay {
-  display: none;
   position: fixed;
   top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6);
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
   justify-content: center;
   align-items: center;
   z-index: 999;
 }
 
 #popupBox {
-  background: rgba(255, 255, 255, 0.9);
-  padding: 20px;
-  border-radius: 10px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 15px;
   text-align: center;
-  color: #000;
+  width: 280px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  animation: popIn 0.4s ease-out;
+  position: relative;
+}
+
+#popupBox h2 {
+  margin-top: 0;
+  color: #28a745;
 }
 
 #popupPrizeImage {
-  width: 100px;
-  height: 100px;
-  margin-bottom: 10px;
+  max-width: 80px;
+  margin-bottom: 15px;
 }
 
 #popupPrizeText {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-#claimCode {
   font-size: 18px;
-  background: #f0f0f0;
-  padding: 5px 10px;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  display: inline-block;
-  color: #000;
+  color: #333;
+  font-weight: bold;
 }
 
-#copyCodeBtn,
 #popupClose {
-  margin: 5px;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
-  background-color: #333;
-  color: #fff;
+  position: absolute;
+  top: 8px;
+  right: 15px;
+  font-size: 22px;
+  color: #aaa;
   cursor: pointer;
 }
 
-#copyCodeBtn:hover,
 #popupClose:hover {
-  background-color: #555;
+  color: #333;
+}
+
+#resetBtn {
+  opacity: 0;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
+#claimCode {
+  text-align: center;
+  font-size: 16px;
+  padding: 5px 10px;
+  width: 130px;
+  margin-right: 10px;
+  color: #111 !important;
+  background: #f2f2f2;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-weight: bold;
 }
 
 #secretResetArea {
   position: fixed;
-  right: 5px;
   bottom: 5px;
-  width: 20px;
-  height: 20px;
-  background-color: transparent;
+  left: 5px;
+  width: 30px;
+  height: 30px;
+  opacity: 0.01;
   z-index: 9999;
-  cursor: pointer;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.7); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
