@@ -47,6 +47,12 @@ ctx.fillStyle = '#999';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 ctx.globalCompositeOperation = 'destination-out';
 
+// Only show result if not already revealed (check localStorage)
+if (localStorage.getItem('hasScratched') === 'true') {
+  revealed = true;
+  canvas.style.pointerEvents = 'none';
+}
+
 function getMousePos(e) {
   const rect = canvas.getBoundingClientRect();
   return {
@@ -77,12 +83,14 @@ function checkRevealed() {
 
 function showResult() {
   revealed = true;
+  localStorage.setItem('hasScratched', 'true'); // Mark as scratched
   prizeImage.style.display = 'block';
   prizeText.style.display = 'block';
   popupPrizeText.textContent = chosenPrize;
   popupPrizeImage.src = prizeImage.src;
   claimCodeElem.value = claimCode;
   popupOverlay.style.display = 'flex';
+  canvas.style.pointerEvents = 'none';
 }
 
 canvas.addEventListener('mousedown', e => {
@@ -115,6 +123,7 @@ copyCodeBtn.addEventListener('click', () => {
 secretResetArea.addEventListener('click', () => {
   resetClicks++;
   if (resetClicks >= 5) {
+    localStorage.removeItem('hasScratched');
     location.reload();
   }
 });
