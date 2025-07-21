@@ -57,11 +57,17 @@ function showPopup(prize) {
   claimCode.style.color = '#111';
   canvas.style.pointerEvents = 'none';
   localStorage.setItem('scratched', 'yes');
+
+  // 显示奖品图层（防止作弊）
+  const prizeLayer = document.getElementById('prizeLayer');
+  if (prizeLayer) {
+    prizeLayer.classList.add('revealed');
+  }
 }
 
 document.getElementById('popupClose').onclick = () => {
-  // 弹窗不可关闭（根据需求已取消）
-  // popup.style.display = 'none';
+  popup.style.display = 'none';
+  bgMusic.play().catch(err => {});
 };
 
 let isDrawing = false;
@@ -89,7 +95,7 @@ function handleScratch(e) {
   const percentage = count / (canvas.width * canvas.height) * 100;
   if (percentage > 50 && !revealed) {
     revealed = true;
-    showPopup(selectedPrize);
+    setTimeout(() => showPopup(selectedPrize), 300); // 延迟触发防卡顿
   }
 }
 
@@ -124,3 +130,8 @@ if (startButton) {
     bgMusic.play().catch(err => console.warn("BG music play failed:", err));
   });
 }
+
+// 如果没有按钮，任何点击页面即可播放背景音乐（一次）
+document.addEventListener('click', () => {
+  bgMusic.play().catch(err => console.warn("BG music auto play failed:", err));
+}, { once: true });
