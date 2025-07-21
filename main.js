@@ -1,169 +1,135 @@
+// main.js
+
 const canvas = document.getElementById('scratchCanvas');
 const ctx = canvas.getContext('2d');
-let isDrawing = false;
-let revealedPixels = 0;
-let totalPixels = 0;
-let scratched = false;
-let resetCount = 0;
-
 const prizeLayer = document.getElementById('prizeLayer');
 const prizeImage = document.getElementById('prizeImage');
 const prizeText = document.getElementById('prizeText');
 const popupOverlay = document.getElementById('popupOverlay');
 const popupPrizeImage = document.getElementById('popupPrizeImage');
 const popupPrizeText = document.getElementById('popupPrizeText');
-const claimCodeDiv = document.getElementById('claimCode');
+const claimCode = document.getElementById('claimCode');
 const copyCodeBtn = document.getElementById('copyCodeBtn');
 const popupClose = document.getElementById('popupClose');
-const resetArea = document.getElementById('secretResetArea');
+const secretResetArea = document.getElementById('secretResetArea');
 
-// 奖品列表与机率
+let isDrawing = false;
+let scratchCount = 0;
+let revealed = false;
+let resetCounter = 0;
+let alreadyScratched = localStorage.getItem('alreadyScratched') === 'true';
+
 const prizes = [
-  { name: 'ANGPAO $3 🧧', image: 'https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png', chance: 10 },
-  { name: 'ANGPAO $5 🧧', image: 'https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png', chance: 30 },
-  { name: 'ANGPAO $8 🧧', image: 'https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png', chance: 40 },
-  { name: 'ANGPAO $12 🧧', image: 'https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png', chance: 20 },
-  { name: 'ANGPAO $68 🧧', image: 'https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png', chance: 0 },
-  { name: 'ANGPAO $88 🧧', image: 'https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png', chance: 0 },
+  { text: 'ANGPAO $3 🧧', chance: 10 },
+  { text: 'ANGPAO $5 🧧', chance: 30 },
+  { text: 'ANGPAO $8 🧧', chance: 40 },
+  { text: 'ANGPAO $12 🧧', chance: 20 },
+  { text: 'ANGPAO $68 🧧', chance: 0 },
+  { text: 'ANGPAO $88 🧧', chance: 0 },
 ];
+
+const prizeImageUrl = 'https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png';
+
+canvas.width = 300;
+canvas.height = 150;
 
 function pickPrize() {
   const rand = Math.random() * 100;
-  let sum = 0;
+  let cumulative = 0;
   for (const prize of prizes) {
-    sum += prize.chance;
-    if (rand <= sum) return prize;
+    cumulative += prize.chance;
+    if (rand < cumulative) return prize;
   }
-  return prizes[0]; // fallback
+  return prizes[0];
 }
 
-let selectedPrize = localStorage.getItem('selectedPrize') 
-  ? JSON.parse(localStorage.getItem('selectedPrize')) 
-  : pickPrize();
+const selectedPrize = pickPrize();
+prizeImage.src = prizeImageUrl;
+prizeText.textContent = selectedPrize.text;
 
-if (!localStorage.getItem('hasScratched')) {
-  localStorage.setItem('selectedPrize', JSON.stringify(selectedPrize));
+ctx.fillStyle = '#AAA';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('touchstart', startDraw);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('touchmove', draw);
+canvas.addEventListener('mouseup', endDraw);
+canvas.addEventListener('touchend', endDraw);
+
+function startDraw(e) {
+  if (revealed || alreadyScratched) return;
+  isDrawing = true;
 }
 
-function drawCover() {
-  ctx.fillStyle = '#888';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  totalPixels = canvas.width * canvas.height;
-}
-
-function revealPrize() {
-  prizeImage.src = selectedPrize.image;
-  prizeText.innerText = selectedPrize.name;
-  prizeImage.style.opacity = 1;
-  prizeText.style.opacity = 1;
-
-  setTimeout(() => {
-    popupPrizeImage.src = selectedPrize.image;
-    popupPrizeText.innerText = selectedPrize.name;
-    claimCodeDiv.innerText = 'RB' + Math.floor(Math.random() * 1000000);
-    popupOverlay.style.display = 'flex';
-    const audio = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_a586d42270.mp3'); // 🎵中奖音效
-    audio.play();
-  }, 800);
-}
-
-function scratch(x, y) {
+function draw(e) {
+  if (!isDrawing || revealed || alreadyScratched) return;
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
   ctx.globalCompositeOperation = 'destination-out';
   ctx.beginPath();
-  ctx.arc(x, y, 20, 0, Math.PI * 2);
+  ctx.arc(x, y, 15, 0, 2 * Math.PI);
   ctx.fill();
+  scratchCount++;
 
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  let clearPixels = 0;
-  for (let i = 0; i < imageData.data.length; i += 4) {
-    if (imageData.data[i + 3] < 128) {
-      clearPixels++;
-    }
-  }
-  const percent = clearPixels / (canvas.width * canvas.height);
-  if (percent > 0.8 && !scratched) {
-    scratched = true;
-    localStorage.setItem('hasScratched', 'true');
+  if (getScratchPercentage() > 80) {
     revealPrize();
   }
 }
 
-function getPos(e) {
-  const rect = canvas.getBoundingClientRect();
-  if (e.touches) {
-    return {
-      x: e.touches[0].clientX - rect.left,
-      y: e.touches[0].clientY - rect.top
-    };
-  } else {
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-  }
+function endDraw() {
+  isDrawing = false;
 }
 
-if (localStorage.getItem('hasScratched')) {
-  drawCover();
-  ctx.globalAlpha = 0.2;
-  ctx.fillStyle = '#444';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  canvas.style.pointerEvents = 'none';
-  revealPrize();
-} else {
-  drawCover();
+function getScratchPercentage() {
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let cleared = 0;
+  for (let i = 0; i < imgData.data.length; i += 4) {
+    if (imgData.data[i + 3] === 0) cleared++;
+  }
+  return (cleared / (canvas.width * canvas.height)) * 100;
 }
 
-canvas.addEventListener('mousedown', e => {
-  if (localStorage.getItem('hasScratched')) return;
-  isDrawing = true;
-  const pos = getPos(e);
-  scratch(pos.x, pos.y);
-});
+function revealPrize() {
+  if (revealed) return;
+  revealed = true;
+  alreadyScratched = true;
+  localStorage.setItem('alreadyScratched', 'true');
 
-canvas.addEventListener('mousemove', e => {
-  if (!isDrawing) return;
-  const pos = getPos(e);
-  scratch(pos.x, pos.y);
-});
+  prizeImage.style.opacity = 1;
+  prizeText.style.opacity = 1;
 
-canvas.addEventListener('mouseup', () => {
-  isDrawing = false;
-});
+  setTimeout(() => {
+    showPopup();
+  }, 800);
+}
 
-canvas.addEventListener('touchstart', e => {
-  if (localStorage.getItem('hasScratched')) return;
-  isDrawing = true;
-  const pos = getPos(e);
-  scratch(pos.x, pos.y);
-});
+function showPopup() {
+  popupPrizeImage.src = prizeImageUrl;
+  popupPrizeText.textContent = selectedPrize.text;
+  claimCode.textContent = generateCode();
+  popupOverlay.style.display = 'flex';
+}
 
-canvas.addEventListener('touchmove', e => {
-  const pos = getPos(e);
-  scratch(pos.x, pos.y);
-  e.preventDefault();
-}, { passive: false });
+function generateCode() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
 
-canvas.addEventListener('touchend', () => {
-  isDrawing = false;
-});
-
-// Reset admin area
-resetArea.addEventListener('click', () => {
-  resetCount++;
-  if (resetCount >= 5) {
-    localStorage.removeItem('hasScratched');
-    localStorage.removeItem('selectedPrize');
-    window.location.reload();
-  }
+copyCodeBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(claimCode.textContent);
+  alert('Claim code copied!');
 });
 
 popupClose.addEventListener('click', () => {
   popupOverlay.style.display = 'none';
 });
 
-copyCodeBtn.addEventListener('click', () => {
-  navigator.clipboard.writeText(claimCodeDiv.innerText).then(() => {
-    alert('Copied!');
-  });
+secretResetArea.addEventListener('click', () => {
+  resetCounter++;
+  if (resetCounter >= 5) {
+    localStorage.removeItem('alreadyScratched');
+    location.reload();
+  }
 });
