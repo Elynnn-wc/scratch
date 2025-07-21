@@ -1,40 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scratch & Win</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Scratch and win exciting ANGPAO prizes!">
+  <title>Scratch & Win ANGPAO</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
   <div class="container">
-    <img src="https://royalebet.net/front/include/images/royalebet.png" alt="Logo" class="logo" />
+    <header class="game-header">
+      <img src="https://royalebet.net/front/include/images/royalebet.png" 
+           alt="RoyaleBet Logo" 
+           class="logo"
+           loading="lazy">
+      <h1 class="title">🎉 Scratch & Win ANGPAO 🧧</h1>
+      <p class="instructions">Use your finger to scratch the silver area and reveal your prize!</p>
+    </header>
 
-    <h1 class="title">🎉 Scratch & Win ANGPAO 🧧</h1>
-    <p class="instructions">Use your finger to scratch the card below!</p>
-
-    <div class="scratch-card">
-      <div id="prizeLayer">
-        <img id="prizeImage" src="" alt="Prize" style="display:none;" />
-        <div id="prizeText" style="display:none;"></div>
+    <main class="game-content">
+      <div class="scratch-container">
+        <div id="prizeLayer" aria-hidden="true">
+          <img id="prizeImage" src="" alt="" class="prize-visual" aria-hidden="true">
+          <div id="prizeText" class="prize-amount" aria-hidden="true"></div>
+        </div>
+        <canvas id="scratchCanvas" 
+                width="300" 
+                height="150"
+                aria-label="Scratch card area"
+                role="img">
+          Your browser doesn't support canvas. Please try a modern browser.
+        </canvas>
       </div>
-      <canvas id="scratchCanvas" width="300" height="150"></canvas>
+    </main>
+
+    <div id="popupOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="popupPrizeText" hidden>
+      <div class="modal-content" id="popupContent">
+        <div class="modal-header">
+          <img id="popupPrizeImage" src="" alt="" class="modal-prize-image">
+          <h2 id="popupPrizeText" class="modal-prize-title"></h2>
+        </div>
+        
+        <div class="modal-body">
+          <p class="claim-instruction">🎟️ Your Claim Code:</p>
+          <div id="claimCode" class="claim-code" aria-live="polite"></div>
+          <button id="copyCodeBtn" class="btn-primary">
+            📋 Copy Code
+          </button>
+        </div>
+        
+        <div class="modal-footer">
+          <button id="popupClose" class="btn-secondary">
+            Close
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div id="popupOverlay">
-      <div id="popupContent">
-        <img id="popupPrizeImage" src="" alt="Prize" />
-        <div id="popupPrizeText"></div>
-        <p style="margin: 10px 0; font-weight: bold;">🎟️ Claim Code:</p>
-        <div id="claimCode" style="font-size: 18px; margin-bottom: 10px;"></div>
-        <button id="copyCodeBtn">Copy Code</button>
-        <button id="popupClose">Close</button>
-      </div>
-    </div>
-
-    <div id="secretResetArea" title="Admin Only (Click 5x to reset)"></div>
+    <div id="secretResetArea" 
+         class="admin-reset" 
+         title="Admin Reset (Click 5 times)" 
+         aria-label="Admin reset area" 
+         role="button"
+         tabindex="0"></div>
   </div>
 
-  <script src="main.js"></script>
+  <script src="main.js" defer></script>
 </body>
 </html>
