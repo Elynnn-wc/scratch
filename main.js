@@ -1,116 +1,165 @@
+// main.js
+
 const canvas = document.getElementById('scratchCanvas');
 const ctx = canvas.getContext('2d');
+let isDrawing = false;
+let lastPoint = null;
+let scratchedPixels = 0;
+let revealed = false;
+let scratchLimit = 0.8; // 80%
+
+const prizeLayer = document.getElementById('prizeLayer');
+const prizeImage = document.getElementById('prizeLayer').querySelector('img');
 const prizeText = document.getElementById('prizeText');
-const prizeImage = document.querySelector('#prizeLayer img');
+
 const popupOverlay = document.getElementById('popupOverlay');
-const popupPrizeText = document.getElementById('popupPrizeText');
+const popupContent = document.getElementById('popupContent');
 const popupPrizeImage = document.getElementById('popupPrizeImage');
-const claimCodeElem = document.getElementById('claimCode');
+const popupPrizeText = document.getElementById('popupPrizeText');
+const claimCode = document.getElementById('claimCode');
 const copyCodeBtn = document.getElementById('copyCodeBtn');
 const popupClose = document.getElementById('popupClose');
 const secretResetArea = document.getElementById('secretResetArea');
 
-let isDrawing = false;
-let revealed = false;
-let resetClicks = 0;
+let canScratch = true;
+let resetClickCount = 0;
+const resetClickThreshold = 5;
 
-const prizeList = [
-  { text: 'ANGPAO $3 🧧', chance: 10 },
-  { text: 'ANGPAO $5 🧧', chance: 30 },
-  { text: 'ANGPAO $8 🧧', chance: 40 },
-  { text: 'ANGPAO $12 🧧', chance: 20 },
-  { text: 'ANGPAO $68 🧧', chance: 0 },
-  { text: 'ANGPAO $88 🧧', chance: 0 }
+const prizes = [
+  { name: 'ANGPAO $3 🧧', chance: 0.1 },
+  { name: 'ANGPAO $5 🧧', chance: 0.3 },
+  { name: 'ANGPAO $8 🧧', chance: 0.4 },
+  { name: 'ANGPAO $12 🧧', chance: 0.2 },
+  { name: 'ANGPAO $68 🧧', chance: 0.0 },
+  { name: 'ANGPAO $88 🧧', chance: 0.0 }
 ];
 
-// Pick prize
-function pickPrize() {
-  const total = prizeList.reduce((sum, p) => sum + p.chance, 0);
-  let rand = Math.random() * total;
-  for (const prize of prizeList) {
-    if (rand < prize.chance) return prize;
-    rand -= prize.chance;
+const prizeImageSrc = 'https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png';
+
+function selectPrize() {
+  const rand = Math.random();
+  let total = 0;
+  for (let prize of prizes) {
+    total += prize.chance;
+    if (rand <= total) return prize;
   }
-  return prizeList[0];
+  return prizes[0];
 }
 
-let chosenPrize = pickPrize();
-let claimCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-
-// Init canvas
-canvas.width = canvas.offsetWidth;
-canvas.height = canvas.offsetHeight;
-ctx.fillStyle = '#aaa';
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-ctx.globalCompositeOperation = 'destination-out';
-
-// Show prize if already scratched
-if (localStorage.getItem('hasScratched') === 'true') {
-  canvas.style.pointerEvents = 'none';
-  revealed = true;
-}
-
-// Draw erase
-function getPos(e) {
+function getBrushPos(e) {
   const rect = canvas.getBoundingClientRect();
-  return {
-    x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
-    y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
-  };
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+  return { x, y };
 }
 
-function scratch(e) {
-  if (revealed) return;
-  const { x, y } = getPos(e);
+function drawPoint(x, y) {
+  ctx.globalCompositeOperation = 'destination-out';
   ctx.beginPath();
-  ctx.arc(x, y, 20, 0, Math.PI * 2);
+  ctx.arc(x, y, 15, 0, Math.PI * 2);
   ctx.fill();
-  if (checkReveal()) showPopup();
+  scratchedPixels++;
+  checkScratchPercent();
 }
 
-function checkReveal() {
-  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-  let count = 0;
-  for (let i = 3; i < pixels.length; i += 4) {
-    if (pixels[i] < 128) count++;
+function checkScratchPercent() {
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let clearPixels = 0;
+  for (let i = 3; i < imgData.data.length; i += 4) {
+    if (imgData.data[i] === 0) clearPixels++;
   }
-  const cleared = count / (canvas.width * canvas.height) * 100;
-  return cleared > 80;
+  const percent = clearPixels / (canvas.width * canvas.height) * 4;
+  if (percent >= scratchLimit && !revealed) {
+    revealPrize();
+  }
+}
+
+function revealPrize() {
+  revealed = true;
+  prizeImage.style.display = 'block';
+  prizeText.style.display = 'block';
+  setTimeout(() => {
+    showPopup();
+  }, 1000);
 }
 
 function showPopup() {
-  revealed = true;
-  canvas.style.pointerEvents = 'none';
-  localStorage.setItem('hasScratched', 'true');
-  prizeText.textContent = chosenPrize.text;
-  prizeText.style.display = 'block';
-  prizeImage.style.display = 'block';
-  popupPrizeText.textContent = chosenPrize.text;
-  popupPrizeImage.src = prizeImage.src;
-  claimCodeElem.value = claimCode;
   popupOverlay.style.display = 'flex';
+  popupPrizeImage.src = prizeImageSrc;
+  popupPrizeText.textContent = currentPrize.name;
+  const code = 'RB-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  claimCode.textContent = code;
 }
 
-canvas.addEventListener('mousedown', e => { isDrawing = true; scratch(e); });
-canvas.addEventListener('mousemove', e => { if (isDrawing) scratch(e); });
-canvas.addEventListener('mouseup', () => isDrawing = false);
-canvas.addEventListener('touchstart', e => { isDrawing = true; scratch(e); }, { passive: true });
-canvas.addEventListener('touchmove', e => { if (isDrawing) scratch(e); }, { passive: true });
-canvas.addEventListener('touchend', () => isDrawing = false);
+function resetGame() {
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = '#ccc';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  scratchedPixels = 0;
+  revealed = false;
+  canScratch = true;
+  prizeImage.style.display = 'none';
+  prizeText.style.display = 'none';
+  popupOverlay.style.display = 'none';
+  currentPrize = selectPrize();
+  prizeText.textContent = currentPrize.name;
+  prizeImage.src = prizeImageSrc;
+}
 
-// Popup
-popupClose.addEventListener('click', () => popupOverlay.style.display = 'none');
-copyCodeBtn.addEventListener('click', () => {
-  claimCodeElem.select();
-  document.execCommand('copy');
-  copyCodeBtn.textContent = 'Copied!';
+canvas.addEventListener('mousedown', (e) => {
+  if (!canScratch) return;
+  isDrawing = true;
+  lastPoint = getBrushPos(e);
+  drawPoint(lastPoint.x, lastPoint.y);
 });
 
-// Admin reset
+canvas.addEventListener('mousemove', (e) => {
+  if (!isDrawing) return;
+  const point = getBrushPos(e);
+  drawPoint(point.x, point.y);
+});
+
+canvas.addEventListener('mouseup', () => {
+  isDrawing = false;
+});
+
+canvas.addEventListener('touchstart', (e) => {
+  if (!canScratch) return;
+  isDrawing = true;
+  lastPoint = getBrushPos(e);
+  drawPoint(lastPoint.x, lastPoint.y);
+});
+
+canvas.addEventListener('touchmove', (e) => {
+  if (!isDrawing) return;
+  const point = getBrushPos(e);
+  drawPoint(point.x, point.y);
+});
+
+canvas.addEventListener('touchend', () => {
+  isDrawing = false;
+});
+
+popupClose.addEventListener('click', () => {
+  popupOverlay.style.display = 'none';
+  canScratch = false;
+});
+
+copyCodeBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(claimCode.textContent);
+  alert('Claim code copied!');
+});
+
 secretResetArea.addEventListener('click', () => {
-  resetClicks++;
-  if (resetClicks >= 5) {
-    localStorage.removeItem('hasScratched');
-    location.reload();
+  resetClickCount++;
+  if (resetClickCount >= resetClickThreshold) {
+    resetClickCount = 0;
+    resetGame();
   }
 });
+
+let currentPrize = selectPrize();
+prizeText.textContent = currentPrize.name;
+prizeImage.src = prizeImageSrc;
+
+resetGame();
