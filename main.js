@@ -1,159 +1,126 @@
 const canvas = document.getElementById('scratchCanvas');
 const ctx = canvas.getContext('2d');
-const prizeLayer = document.getElementById('prizeLayer');
-const prizeText = document.getElementById('prizeText').querySelector('strong');
-const prizeImage = document.getElementById('prizeImage');
-const popupOverlay = document.getElementById('popupOverlay');
+const isTouchDevice = 'ontouchstart' in window;
+const moveEvent = isTouchDevice ? 'touchmove' : 'mousemove';
+const downEvent = isTouchDevice ? 'touchstart' : 'mousedown';
+const upEvent = isTouchDevice ? 'touchend' : 'mouseup';
+
+const resetBtn = document.getElementById('resetBtn');
+const popup = document.getElementById('popupOverlay');
 const popupPrizeText = document.getElementById('popupPrizeText');
 const popupPrizeImage = document.getElementById('popupPrizeImage');
-const claimCodeInput = document.getElementById('claimCode');
-const bgMusic = document.getElementById('bgMusic');
+const prizeImage = document.getElementById('prizeImage');
+const prizeText = document.getElementById('prizeText');
 const winSound = document.getElementById('winSound');
+const bgMusic = document.getElementById('bgMusic');
+const claimCode = document.getElementById('claimCode');
+
+const prizes = [
+  { text: 'ANGPAO $3 🧧', chance: 10 },
+  { text: 'ANGPAO $5 🧧', chance: 30 },
+  { text: 'ANGPAO $8 🧧', chance: 40 },
+  { text: 'ANGPAO $12 🧧', chance: 20 },
+  { text: 'ANGPAO $68 🧧', chance: 0 },
+  { text: 'ANGPAO $88 🧧', chance: 0 }
+];
+
+function getRandomPrize() {
+  const weighted = [];
+  prizes.forEach((p, i) => {
+    for (let j = 0; j < p.chance; j++) weighted.push(i);
+  });
+  const index = weighted[Math.floor(Math.random() * weighted.length)];
+  return prizes[index];
+}
+
+const selectedPrize = JSON.parse(localStorage.getItem('scratchPrize')) || getRandomPrize();
+prizeText.innerHTML = `<strong>${selectedPrize.text}</strong>`;
+localStorage.setItem('scratchPrize', JSON.stringify(selectedPrize));
+
+function copyCode() {
+  claimCode.select();
+  document.execCommand('copy');
+}
+
+function showPopup(prize) {
+  popupPrizeText.innerHTML = `<strong>${prize.text}</strong>`;
+  popupPrizeImage.src = prizeImage.src;
+  popup.style.display = 'flex';
+
+  // 停止背景音乐，播放中奖音效
+  bgMusic.pause();
+  bgMusic.currentTime = 0;
+  winSound.play().catch(err => console.warn("Audio play failed:", err));
+
+  const code = 'RB' + Math.floor(100000 + Math.random() * 900000);
+  claimCode.value = code;
+  claimCode.style.color = '#111';
+  canvas.style.pointerEvents = 'none';
+  localStorage.setItem('scratched', 'yes');
+}
+
+document.getElementById('popupClose').onclick = () => {
+  // 弹窗不可关闭（根据需求已取消）
+  // popup.style.display = 'none';
+};
 
 let isDrawing = false;
 let revealed = false;
-let clearedPixels = 0;
-let totalPixels = canvas.width * canvas.height;
-let startMusic = false;
+let scratchDisabled = localStorage.getItem('scratched') === 'yes';
+let resetTap = 0;
 
-const prizes = [
-  { text: "RM 8 Bonus", img: "https://cdn-icons-png.flaticon.com/512/866/866218.png" },
-  { text: "Free Spin", img: "https://cdn-icons-png.flaticon.com/512/2910/2910764.png" },
-  { text: "RM 5 Bonus", img: "https://cdn-icons-png.flaticon.com/512/3500/3500833.png" },
-  { text: "No Luck This Time", img: "https://cdn-icons-png.flaticon.com/512/753/753345.png" },
-  { text: "RM 10 Bonus", img: "https://cdn-icons-png.flaticon.com/512/1146/1146869.png" }
-];
-
-function drawMask() {
-  ctx.fillStyle = '#999';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
-
-function revealPrize() {
-  const prize = prizes[Math.floor(Math.random() * prizes.length)];
-  prizeText.textContent = prize.text;
-  prizeImage.src = prize.img;
-  popupPrizeText.textContent = prize.text;
-  popupPrizeImage.src = prize.img;
-  claimCodeInput.value = generateCode();
-  popupOverlay.style.display = 'block';
-
-  // Play win sound
-  bgMusic.pause();
-  winSound.currentTime = 0;
-  winSound.play();
-}
-
-function generateCode() {
-  return 'LB7-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-}
-
-function getPos(e) {
+function handleScratch(e) {
+  if (scratchDisabled || revealed) return;
+  if (!isDrawing) return;
+  e.preventDefault();
   const rect = canvas.getBoundingClientRect();
-  if (e.touches) {
-    return {
-      x: e.touches[0].clientX - rect.left,
-      y: e.touches[0].clientY - rect.top
-    };
-  } else {
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-  }
-}
-
-function scratch(e) {
-  if (!isDrawing || revealed) return;
-
-  const pos = getPos(e);
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
   ctx.globalCompositeOperation = 'destination-out';
   ctx.beginPath();
-  ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
+  ctx.arc(x, y, 15, 0, Math.PI * 2);
   ctx.fill();
 
-  // Count cleared pixels every 20 scratches
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  let clear = 0;
-  for (let i = 0; i < imageData.data.length; i += 4) {
-    if (imageData.data[i + 3] === 0) clear++;
+  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let count = 0;
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    if (pixels.data[i + 3] === 0) count++;
   }
-
-  const percentCleared = clear / (canvas.width * canvas.height);
-  if (percentCleared > 0.5 && !revealed) {
+  const percentage = count / (canvas.width * canvas.height) * 100;
+  if (percentage > 50 && !revealed) {
     revealed = true;
-    prizeLayer.classList.add('revealed');
-    revealPrize();
+    showPopup(selectedPrize);
   }
 }
 
-// Prevent right-click + long press
-canvas.oncontextmenu = function (e) {
-  e.preventDefault();
-  return false;
-};
-
-canvas.addEventListener('mousedown', (e) => {
+canvas.addEventListener(downEvent, () => {
+  if (scratchDisabled) return;
   isDrawing = true;
-  scratch(e);
-  if (!startMusic) {
-    bgMusic.play();
-    startMusic = true;
-  }
 });
-canvas.addEventListener('mousemove', scratch);
-canvas.addEventListener('mouseup', () => isDrawing = false);
-canvas.addEventListener('mouseleave', () => isDrawing = false);
+canvas.addEventListener(upEvent, () => isDrawing = false);
+canvas.addEventListener(moveEvent, handleScratch);
 
-canvas.addEventListener('touchstart', (e) => {
-  isDrawing = true;
-  scratch(e);
-  if (!startMusic) {
-    bgMusic.play();
-    startMusic = true;
-  }
-});
-canvas.addEventListener('touchmove', scratch);
-canvas.addEventListener('touchend', () => isDrawing = false);
-
-document.getElementById('popupClose').addEventListener('click', () => {
-  // 不允许用户关闭弹窗（如果你想开放关闭，解除注释）
-  // popupOverlay.style.display = 'none';
-});
-
-document.getElementById('resetBtn').addEventListener('click', () => {
-  revealed = false;
-  prizeLayer.classList.remove('revealed');
-  drawMask();
-  bgMusic.pause();
-  bgMusic.currentTime = 0;
-  startMusic = false;
-});
-
-// Secret Reset area
-let secretClickCount = 0;
 document.getElementById('secretResetArea').addEventListener('click', () => {
-  secretClickCount++;
-  if (secretClickCount >= 5) {
-    revealed = false;
-    drawMask();
-    prizeLayer.classList.remove('revealed');
-    popupOverlay.style.display = 'none';
-    secretClickCount = 0;
-    bgMusic.pause();
-    bgMusic.currentTime = 0;
+  resetTap++;
+  if (resetTap >= 5) {
+    localStorage.removeItem('scratched');
+    localStorage.removeItem('scratchPrize');
+    location.reload();
   }
 });
 
-function copyCode() {
-  const code = document.getElementById("claimCode");
-  code.select();
-  code.setSelectionRange(0, 9999);
-  document.execCommand("copy");
-  alert("Code copied: " + code.value);
+function initCanvas() {
+  ctx.fillStyle = '#999';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (scratchDisabled) canvas.style.pointerEvents = 'none';
 }
 
-// Init
-window.onload = () => {
-  drawMask();
-};
+initCanvas();
+
+// 用户点击按钮播放背景音乐（防止 iOS 静音限制）
+const startButton = document.getElementById('startButton');
+if (startButton) {
+  startButton.addEventListener('click', () => {
+    bgMusic.play().catch(err => console.warn("BG music play failed:", err));
+  });
+}
