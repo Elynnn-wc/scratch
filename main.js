@@ -13,6 +13,7 @@ let isDrawing = false;
 let hasRevealed = false;
 let revealedPercentage = 0;
 let resetClickCount = 0;
+let selectedPrize = null;
 
 const prizes = [
   { text: 'ANGPAO $3 🧧', chance: 10 },
@@ -34,9 +35,14 @@ function pickPrize() {
   return prizes[0];
 }
 
-const selectedPrize = pickPrize();
-document.getElementById('prizeText').innerText = selectedPrize.text;
-document.getElementById('prizeImage').src = 'https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png';
+function initPrize() {
+  selectedPrize = pickPrize();
+  document.getElementById('prizeText').innerText = selectedPrize.text;
+  document.getElementById('prizeImage').src = 'https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png';
+  prizeLayer.style.visibility = 'hidden';
+}
+
+initPrize();
 
 canvas.width = canvas.offsetWidth;
 canvas.height = canvas.offsetHeight;
@@ -149,8 +155,7 @@ function resetGame() {
   prizeLayer.style.visibility = 'hidden';
   popupOverlay.style.display = 'none';
   copyBtn.textContent = 'Copy';
-  selectedPrize = pickPrize();
-  document.getElementById('prizeText').innerText = selectedPrize.text;
+  initPrize();
   claimCodeInput.value = '';
 }
 
