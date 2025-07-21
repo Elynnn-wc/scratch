@@ -2,37 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scratch & Win</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scratch & Win 🎉</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <img src="https://royalebet.net/front/include/images/royalebet.png" alt="Company Logo">
-    <h1>Scratch & Win Angpao! 🧧</h1>
-  </header>
+  <!-- Company Logo -->
+  <img src="https://royalebet.net/front/include/images/royalebet.png" alt="Company Logo" style="width:180px; margin-bottom: 10px;"/>
 
-  <div id="gameContainer">
-    <canvas id="scratchCanvas" width="300" height="150"></canvas>
+  <!-- Title -->
+  <h2 style="margin-bottom: 5px;">Scratch & Win 🧧</h2>
+  <p style="font-size:14px; color:#666;">Use your finger or mouse to scratch!</p>
+
+  <!-- Scratch Card Container -->
+  <div id="scratchContainer">
+    <canvas id="scratchCanvas"></canvas>
     <div id="prizeLayer">
-      <img id="prizeImage" src="" alt="Prize">
-      <div id="prizeText"></div>
+      <img id="prizeImage" src="" alt="Prize" />
+      <p id="prizeText" style="font-size:18px; font-weight:bold;"></p>
     </div>
   </div>
 
+  <!-- Popup -->
   <div id="popupOverlay">
     <div id="popupContent">
-      <button id="popupClose">×</button>
-      <img id="popupPrizeImage" src="" alt="Prize">
-      <div id="popupPrizeText"></div>
+      <img id="popupPrizeImage" src="" alt="Prize" />
+      <p id="popupPrizeText" style="font-weight:bold; font-size:18px; margin-top:10px;"></p>
       <p style="margin-bottom:5px; font-weight:bold;">🎟️ Claim Code:</p>
-      <input type="text" id="claimCode" readonly>
+      <input type="text" id="claimCode" readonly />
       <button id="copyCodeBtn">Copy Code</button>
+      <div id="popupClose">Close</div>
     </div>
   </div>
 
+  <!-- Hidden Reset Area -->
   <div id="secretResetArea"></div>
 
+  <!-- JS -->
   <script src="main.js"></script>
 </body>
 </html>
