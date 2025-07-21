@@ -1,159 +1,120 @@
-const canvas = document.getElementById("scratchCanvas");
-const ctx = canvas.getContext("2d");
-const prizeLayer = document.getElementById("prizeLayer");
-const prizeImage = document.getElementById("prizeImage");
-const prizeText = document.getElementById("prizeText");
-const popupOverlay = document.getElementById("popupOverlay");
-const popupPrizeImage = document.getElementById("popupPrizeImage");
-const popupPrizeText = document.getElementById("popupPrizeText");
-const claimCode = document.getElementById("claimCode");
-const copyCodeBtn = document.getElementById("copyCodeBtn");
-const popupClose = document.getElementById("popupClose");
-const secretResetArea = document.getElementById("secretResetArea");
+// Scratch Card Logic
+const canvas = document.getElementById('scratchCanvas');
+const ctx = canvas.getContext('2d');
+const prizeLayer = document.getElementById('prizeLayer');
+const prizeText = document.getElementById('prizeText');
+const prizeImage = document.querySelector('#prizeLayer img');
+const popupOverlay = document.getElementById('popupOverlay');
+const popupPrizeText = document.getElementById('popupPrizeText');
+const popupPrizeImage = document.getElementById('popupPrizeImage');
+const claimCodeElem = document.getElementById('claimCode');
+const copyCodeBtn = document.getElementById('copyCodeBtn');
+const popupClose = document.getElementById('popupClose');
+const secretResetArea = document.getElementById('secretResetArea');
 
 let isDrawing = false;
+let lastX, lastY;
 let revealed = false;
-let resetCount = 0;
-let revealedPixels = 0;
-let totalPixels = 0;
+let scratchCount = 0;
+let resetClicks = 0;
 
-// 🎁 奖品列表
-const prizes = [
-  { text: "ANGPAO $3 🧧", image: "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png", weight: 10 },
-  { text: "ANGPAO $5 🧧", image: "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png", weight: 30 },
-  { text: "ANGPAO $8 🧧", image: "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png", weight: 40 },
-  { text: "ANGPAO $12 🧧", image: "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png", weight: 20 },
-  { text: "ANGPAO $68 🧧", image: "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png", weight: 0 },
-  { text: "ANGPAO $88 🧧", image: "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png", weight: 0 }
+let prizeList = [
+  { text: 'ANGPAO $3 🧧', chance: 10 },
+  { text: 'ANGPAO $5 🧧', chance: 30 },
+  { text: 'ANGPAO $8 🧧', chance: 40 },
+  { text: 'ANGPAO $12 🧧', chance: 20 },
+  { text: 'ANGPAO $68 🧧', chance: 0 },
+  { text: 'ANGPAO $88 🧧', chance: 0 }
 ];
 
-// 随机奖品
 function pickPrize() {
-  const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
-  let rand = Math.random() * totalWeight;
-  for (const prize of prizes) {
-    if (rand < prize.weight) return prize;
-    rand -= prize.weight;
+  const total = prizeList.reduce((sum, prize) => sum + prize.chance, 0);
+  let rand = Math.random() * total;
+  for (let prize of prizeList) {
+    if (rand < prize.chance) return prize.text;
+    rand -= prize.chance;
   }
-  return prizes[0];
+  return prizeList[0].text;
 }
 
-let selectedPrize = pickPrize();
+let chosenPrize = pickPrize();
+let claimCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+prizeText.textContent = chosenPrize;
 
-// 初始化 Canvas
-function resizeCanvas() {
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
-  ctx.fillStyle = "#999";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  totalPixels = canvas.width * canvas.height;
-}
+canvas.width = canvas.offsetWidth;
+canvas.height = canvas.offsetHeight;
+ctx.fillStyle = '#999';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.globalCompositeOperation = 'destination-out';
 
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
-
-// 显示奖品
-function revealPrize() {
-  revealed = true;
-  prizeImage.src = selectedPrize.image;
-  prizeText.textContent = selectedPrize.text;
-  prizeImage.style.display = "block";
-  prizeText.style.display = "block";
-  setTimeout(() => {
-    popupPrizeImage.src = selectedPrize.image;
-    popupPrizeText.textContent = selectedPrize.text;
-    claimCode.value = "RB" + Math.floor(100000 + Math.random() * 900000);
-    popupOverlay.style.display = "flex";
-    new Audio("https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3").play();
-  }, 500);
-}
-
-// 刮奖处理
-function scratch(x, y) {
-  if (revealed) return;
-  ctx.globalCompositeOperation = "destination-out";
-  ctx.beginPath();
-  ctx.arc(x, y, 15, 0, Math.PI * 2);
-  ctx.fill();
-  revealedPixels += Math.PI * 15 * 15;
-  let percent = revealedPixels / totalPixels;
-  if (percent > 0.3) {
-    prizeImage.style.display = "block";
-  }
-  if (percent > 0.5) {
-    prizeText.style.display = "block";
-  }
-  if (percent > 0.8 && !revealed) {
-    revealPrize();
-  }
-}
-
-// 事件监听
-function getOffset(e) {
+function getMousePos(e) {
   const rect = canvas.getBoundingClientRect();
-  if (e.touches) {
-    return {
-      x: e.touches[0].clientX - rect.left,
-      y: e.touches[0].clientY - rect.top
-    };
-  } else {
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-  }
+  return {
+    x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
+    y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
+  };
 }
 
-canvas.addEventListener("mousedown", e => {
+function handleScratch(e) {
   if (revealed) return;
+  const { x, y } = getMousePos(e);
+  ctx.beginPath();
+  ctx.arc(x, y, 15, 0, 2 * Math.PI);
+  ctx.fill();
+  scratchCount++;
+  if (checkRevealed()) showResult();
+}
+
+function checkRevealed() {
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let cleared = 0;
+  for (let i = 0; i < imgData.data.length; i += 4) {
+    if (imgData.data[i + 3] === 0) cleared++;
+  }
+  const percent = cleared / (canvas.width * canvas.height) * 100;
+  return percent > 80;
+}
+
+function showResult() {
+  revealed = true;
+  prizeImage.style.display = 'block';
+  prizeText.style.display = 'block';
+  popupPrizeText.textContent = chosenPrize;
+  popupPrizeImage.src = prizeImage.src;
+  claimCodeElem.value = claimCode;
+  popupOverlay.style.display = 'flex';
+}
+
+canvas.addEventListener('mousedown', e => {
   isDrawing = true;
-  const pos = getOffset(e);
-  scratch(pos.x, pos.y);
+  handleScratch(e);
 });
-
-canvas.addEventListener("mousemove", e => {
-  if (!isDrawing || revealed) return;
-  const pos = getOffset(e);
-  scratch(pos.x, pos.y);
+canvas.addEventListener('mousemove', e => {
+  if (isDrawing) handleScratch(e);
 });
-
-canvas.addEventListener("mouseup", () => {
-  isDrawing = false;
-});
-
-canvas.addEventListener("touchstart", e => {
-  if (revealed) return;
+canvas.addEventListener('mouseup', () => isDrawing = false);
+canvas.addEventListener('touchstart', e => {
   isDrawing = true;
-  const pos = getOffset(e);
-  scratch(pos.x, pos.y);
+  handleScratch(e);
+}, { passive: true });
+canvas.addEventListener('touchmove', e => {
+  if (isDrawing) handleScratch(e);
+}, { passive: true });
+canvas.addEventListener('touchend', () => isDrawing = false);
+
+popupClose.addEventListener('click', () => {
+  popupOverlay.style.display = 'none';
 });
 
-canvas.addEventListener("touchmove", e => {
-  if (!isDrawing || revealed) return;
-  const pos = getOffset(e);
-  scratch(pos.x, pos.y);
+copyCodeBtn.addEventListener('click', () => {
+  claimCodeElem.select();
+  document.execCommand('copy');
+  copyCodeBtn.textContent = 'Copied!';
 });
 
-canvas.addEventListener("touchend", () => {
-  isDrawing = false;
-});
-
-// 复制按钮
-copyCodeBtn.addEventListener("click", () => {
-  claimCode.select();
-  document.execCommand("copy");
-  copyCodeBtn.textContent = "Copied!";
-});
-
-// 关闭弹窗后不再允许刮
-popupClose.addEventListener("click", () => {
-  popupOverlay.style.display = "none";
-});
-
-// 隐藏区域管理员重置
-secretResetArea.addEventListener("click", () => {
-  resetCount++;
-  if (resetCount >= 5) {
+secretResetArea.addEventListener('click', () => {
+  resetClicks++;
+  if (resetClicks >= 5) {
     location.reload();
   }
 });
