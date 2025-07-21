@@ -19,6 +19,7 @@ body {
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
   width: 100%;
   max-width: 400px;
+  position: relative;
 }
 
 .logo {
@@ -38,6 +39,9 @@ canvas {
   height: auto;
   max-width: 300px;
   max-height: 150px;
+  background-color: #aaa;
+  display: block;
+  margin: 0 auto;
 }
 
 #prizeLayer {
@@ -48,6 +52,17 @@ canvas {
   text-align: center;
   width: 100%;
   pointer-events: none;
+  z-index: 1;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#prizeImage,
+#prizeText {
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  pointer-events: none;
 }
 
 #prizeImage {
@@ -55,12 +70,14 @@ canvas {
   height: 80px;
   margin-bottom: 10px;
   transition: opacity 0.6s ease;
+  opacity: 0;
 }
 
 #prizeText {
   font-size: 18px;
   font-weight: bold;
   transition: opacity 0.6s ease;
+  opacity: 0;
 }
 
 #popupOverlay {
@@ -101,6 +118,7 @@ canvas {
   border-radius: 5px;
   margin-bottom: 10px;
   display: inline-block;
+  color: #000;
 }
 
 #copyCodeBtn,
