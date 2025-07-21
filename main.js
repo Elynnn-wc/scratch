@@ -3,9 +3,10 @@
 const canvas = document.getElementById('scratchCanvas');
 const ctx = canvas.getContext('2d');
 let isDrawing = false;
-let scratchedPixels = 0;
 let revealed = false;
-let scratchLimit = 0.8; // 80%
+let resetClickCount = 0;
+const resetClickThreshold = 5;
+const scratchLimit = 0.8; // 80%
 
 const prizeLayer = document.getElementById('prizeLayer');
 const prizeImage = document.getElementById('prizeImage');
@@ -19,10 +20,6 @@ const copyCodeBtn = document.getElementById('copyCodeBtn');
 const popupClose = document.getElementById('popupClose');
 const secretResetArea = document.getElementById('secretResetArea');
 
-let canScratch = true;
-let resetClickCount = 0;
-const resetClickThreshold = 5;
-
 const prizes = [
   { name: 'ANGPAO $3 🧧', chance: 0.1 },
   { name: 'ANGPAO $5 🧧', chance: 0.3 },
@@ -33,6 +30,9 @@ const prizes = [
 ];
 
 const prizeImageSrc = 'https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png';
+
+let canScratch = localStorage.getItem('hasScratched') !== 'true';
+let currentPrize;
 
 function selectPrize() {
   const rand = Math.random();
@@ -77,6 +77,8 @@ function checkScratchPercent() {
 
 function revealPrize() {
   revealed = true;
+  canScratch = false;
+  localStorage.setItem('hasScratched', 'true');
   prizeImage.style.display = 'block';
   prizeText.style.display = 'block';
   setTimeout(() => {
@@ -89,12 +91,12 @@ function revealPrize() {
 
 function resetGame() {
   ctx.globalCompositeOperation = 'source-over';
-  ctx.fillStyle = '#cccccc';
+  ctx.fillStyle = '#999999';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  scratchedPixels = 0;
   revealed = false;
   canScratch = true;
+  localStorage.removeItem('hasScratched');
   popupOverlay.style.display = 'none';
   prizeImage.style.display = 'none';
   prizeText.style.display = 'none';
@@ -121,7 +123,6 @@ canvas.addEventListener('touchend', () => { isDrawing = false; });
 
 popupClose.addEventListener('click', () => {
   popupOverlay.style.display = 'none';
-  canScratch = false;
 });
 
 copyCodeBtn.addEventListener('click', () => {
@@ -137,8 +138,12 @@ secretResetArea.addEventListener('click', () => {
   }
 });
 
-let currentPrize = selectPrize();
-prizeText.textContent = currentPrize.name;
-prizeImage.src = prizeImageSrc;
-
-resetGame();
+if (canScratch) {
+  resetGame();
+} else {
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = '#999999';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  prizeImage.style.display = 'block';
+  prizeText.style.display = 'block';
+}
