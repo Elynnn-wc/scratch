@@ -160,13 +160,6 @@ header h1 {
   height: 30px;
   opacity: 0.01;
   z-index: 9999;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-  -webkit-user-drag: none;
-  touch-action: none;
-  pointer-events: none;
-  user-select: none;
 }
 
 @keyframes popIn {
