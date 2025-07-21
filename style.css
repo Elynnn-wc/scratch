@@ -89,6 +89,7 @@ canvas#scratchCanvas {
   left: 0;
   z-index: 2;
   border-radius: 10px;
+  background-color: #999;
 }
 
 #popupOverlay {
