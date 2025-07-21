@@ -12,6 +12,7 @@ const popupPrizeImage = document.getElementById('popupPrizeImage');
 const prizeImage = document.getElementById('prizeImage');
 const prizeText = document.getElementById('prizeText');
 const winSound = document.getElementById('winSound');
+const bgMusic = document.getElementById('bgMusic');
 const claimCode = document.getElementById('claimCode');
 
 const prizes = [
@@ -45,7 +46,12 @@ function showPopup(prize) {
   popupPrizeText.innerHTML = `<strong>${prize.text}</strong>`;
   popupPrizeImage.src = prizeImage.src;
   popup.style.display = 'flex';
-  winSound.play();
+
+  // 停止背景音乐，播放中奖音效
+  bgMusic.pause();
+  bgMusic.currentTime = 0;
+  winSound.play().catch(err => console.warn("Audio play failed:", err));
+
   const code = 'RB' + Math.floor(100000 + Math.random() * 900000);
   claimCode.value = code;
   claimCode.style.color = '#111';
@@ -53,7 +59,10 @@ function showPopup(prize) {
   localStorage.setItem('scratched', 'yes');
 }
 
-document.getElementById('popupClose').onclick = () => popup.style.display = 'none';
+document.getElementById('popupClose').onclick = () => {
+  // 弹窗不可关闭（根据需求已取消）
+  // popup.style.display = 'none';
+};
 
 let isDrawing = false;
 let revealed = false;
@@ -105,31 +114,13 @@ function initCanvas() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   if (scratchDisabled) canvas.style.pointerEvents = 'none';
 }
-// 移动端静默解锁音效播放权限（不会发出声音）
-document.body.addEventListener('touchstart', function () {
-  const silent = document.getElementById("silentAudio");
-  if (silent && silent.paused) {
-    silent.play().then(() => {
-      silent.pause();
-      silent.currentTime = 0;
-    }).catch((err) => {
-      console.log("Silent audio unlock failed:", err);
-    });
-  }
-}, { once: true });
-
-// 解锁移动端音频播放权限
-document.body.addEventListener('touchstart', function () {
-  const audio = document.getElementById("winSound");
-  if (audio && audio.paused) {
-    audio.play().then(() => {
-      audio.pause();
-      audio.currentTime = 0;
-    }).catch((err) => {
-      console.log("Touch audio unlock failed:", err);
-    });
-  }
-}, { once: true });
-
 
 initCanvas();
+
+// 用户点击按钮播放背景音乐（防止 iOS 静音限制）
+const startButton = document.getElementById('startButton');
+if (startButton) {
+  startButton.addEventListener('click', () => {
+    bgMusic.play().catch(err => console.warn("BG music play failed:", err));
+  });
+}
