@@ -2,12 +2,13 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #f0f0f0;
+  background: #111;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  color: #fff;
 }
 
 #scratchContainer {
@@ -21,7 +22,7 @@ body {
   width: 100%;
   height: 100%;
   touch-action: none;
-  background: transparent;
+  background: #999; /* Ensure canvas has a gray background */
   cursor: pointer;
 }
 
@@ -32,20 +33,26 @@ body {
   width: 100%;
   height: 100%;
   text-align: center;
-  background: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  visibility: hidden;
+  z-index: 1;
   pointer-events: none;
-  z-index: 2;
+  user-select: none;
 }
 
 #prizeLayer img {
   width: 60px;
   height: 60px;
   margin-bottom: 10px;
+  display: none;
+}
+
+#prizeText {
+  font-size: 18px;
+  font-weight: bold;
+  display: none;
 }
 
 #popupOverlay {
@@ -63,6 +70,7 @@ body {
 
 #popupContent {
   background: white;
+  color: black;
   padding: 20px;
   border-radius: 10px;
   text-align: center;
@@ -109,4 +117,5 @@ body {
   right: 10px;
   opacity: 0;
   z-index: 20;
+  background: transparent;
 }
