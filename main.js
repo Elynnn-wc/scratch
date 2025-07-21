@@ -105,6 +105,19 @@ function initCanvas() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   if (scratchDisabled) canvas.style.pointerEvents = 'none';
 }
+// 移动端静默解锁音效播放权限（不会发出声音）
+document.body.addEventListener('touchstart', function () {
+  const silent = document.getElementById("silentAudio");
+  if (silent && silent.paused) {
+    silent.play().then(() => {
+      silent.pause();
+      silent.currentTime = 0;
+    }).catch((err) => {
+      console.log("Silent audio unlock failed:", err);
+    });
+  }
+}, { once: true });
+
 // 解锁移动端音频播放权限
 document.body.addEventListener('touchstart', function () {
   const audio = document.getElementById("winSound");
