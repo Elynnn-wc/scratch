@@ -3,17 +3,15 @@
 const canvas = document.getElementById('scratchCanvas');
 const ctx = canvas.getContext('2d');
 let isDrawing = false;
-let lastPoint = null;
 let scratchedPixels = 0;
 let revealed = false;
 let scratchLimit = 0.8; // 80%
 
 const prizeLayer = document.getElementById('prizeLayer');
-const prizeImage = document.getElementById('prizeLayer').querySelector('img');
+const prizeImage = document.getElementById('prizeImage');
 const prizeText = document.getElementById('prizeText');
 
 const popupOverlay = document.getElementById('popupOverlay');
-const popupContent = document.getElementById('popupContent');
 const popupPrizeImage = document.getElementById('popupPrizeImage');
 const popupPrizeText = document.getElementById('popupPrizeText');
 const claimCode = document.getElementById('claimCode');
@@ -56,20 +54,23 @@ function getBrushPos(e) {
 function drawPoint(x, y) {
   ctx.globalCompositeOperation = 'destination-out';
   ctx.beginPath();
-  ctx.arc(x, y, 15, 0, Math.PI * 2);
+  ctx.arc(x, y, 20, 0, Math.PI * 2);
   ctx.fill();
-  scratchedPixels++;
-  checkScratchPercent();
+}
+
+function getClearedPercentage() {
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let cleared = 0;
+  for (let i = 3; i < imgData.data.length; i += 4) {
+    if (imgData.data[i] === 0) cleared++;
+  }
+  return cleared / (canvas.width * canvas.height) * 4;
 }
 
 function checkScratchPercent() {
-  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  let clearPixels = 0;
-  for (let i = 3; i < imgData.data.length; i += 4) {
-    if (imgData.data[i] === 0) clearPixels++;
-  }
-  const percent = clearPixels / (canvas.width * canvas.height) * 4;
-  if (percent >= scratchLimit && !revealed) {
+  if (revealed) return;
+  const percent = getClearedPercentage();
+  if (percent >= scratchLimit) {
     revealPrize();
   }
 }
@@ -79,66 +80,44 @@ function revealPrize() {
   prizeImage.style.display = 'block';
   prizeText.style.display = 'block';
   setTimeout(() => {
-    showPopup();
+    popupOverlay.style.display = 'flex';
+    popupPrizeImage.src = prizeImage.src;
+    popupPrizeText.textContent = currentPrize.name;
+    claimCode.textContent = 'RB-' + Math.random().toString(36).substring(2, 8).toUpperCase();
   }, 1000);
-}
-
-function showPopup() {
-  popupOverlay.style.display = 'flex';
-  popupPrizeImage.src = prizeImageSrc;
-  popupPrizeText.textContent = currentPrize.name;
-  const code = 'RB-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-  claimCode.textContent = code;
 }
 
 function resetGame() {
   ctx.globalCompositeOperation = 'source-over';
-  ctx.fillStyle = '#ccc';
+  ctx.fillStyle = '#cccccc';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
   scratchedPixels = 0;
   revealed = false;
   canScratch = true;
+  popupOverlay.style.display = 'none';
   prizeImage.style.display = 'none';
   prizeText.style.display = 'none';
-  popupOverlay.style.display = 'none';
+
   currentPrize = selectPrize();
   prizeText.textContent = currentPrize.name;
   prizeImage.src = prizeImageSrc;
 }
 
-canvas.addEventListener('mousedown', (e) => {
-  if (!canScratch) return;
-  isDrawing = true;
-  lastPoint = getBrushPos(e);
-  drawPoint(lastPoint.x, lastPoint.y);
-});
+function scratchHandler(e) {
+  if (!canScratch || revealed) return;
+  const pos = getBrushPos(e);
+  drawPoint(pos.x, pos.y);
+  checkScratchPercent();
+  e.preventDefault();
+}
 
-canvas.addEventListener('mousemove', (e) => {
-  if (!isDrawing) return;
-  const point = getBrushPos(e);
-  drawPoint(point.x, point.y);
-});
-
-canvas.addEventListener('mouseup', () => {
-  isDrawing = false;
-});
-
-canvas.addEventListener('touchstart', (e) => {
-  if (!canScratch) return;
-  isDrawing = true;
-  lastPoint = getBrushPos(e);
-  drawPoint(lastPoint.x, lastPoint.y);
-});
-
-canvas.addEventListener('touchmove', (e) => {
-  if (!isDrawing) return;
-  const point = getBrushPos(e);
-  drawPoint(point.x, point.y);
-});
-
-canvas.addEventListener('touchend', () => {
-  isDrawing = false;
-});
+canvas.addEventListener('mousedown', (e) => { isDrawing = true; scratchHandler(e); });
+canvas.addEventListener('mousemove', (e) => { if (isDrawing) scratchHandler(e); });
+canvas.addEventListener('mouseup', () => { isDrawing = false; });
+canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratchHandler(e); });
+canvas.addEventListener('touchmove', (e) => { if (isDrawing) scratchHandler(e); });
+canvas.addEventListener('touchend', () => { isDrawing = false; });
 
 popupClose.addEventListener('click', () => {
   popupOverlay.style.display = 'none';
