@@ -69,6 +69,7 @@ h1 {
   -moz-user-select: none;
   -ms-user-select: none;
   pointer-events: none;
+  visibility: hidden;
 }
 
 #prizeImage {
