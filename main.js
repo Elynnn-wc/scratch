@@ -14,7 +14,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let isDrawing = false;
   let hasRevealed = false;
+  let scratchCount = 0;
   let resetClickCount = 0;
+  let alreadyScratched = false;
 
   const prizes = [
     { name: "ANGPAO $3 🧧", weight: 10 },
@@ -52,19 +54,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function resetGame() {
     hasRevealed = false;
+    scratchCount = 0;
+    alreadyScratched = false;
     selectedPrize = pickPrize();
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#999";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    prizeLayer.style.visibility = "visible";
+    prizeLayer.style.visibility = "hidden";
     prizeImage.src = prizeImageUrl;
     prizeText.textContent = selectedPrize.name;
   }
 
   function revealPrize() {
     hasRevealed = true;
+    alreadyScratched = true;
+    prizeLayer.style.visibility = "visible";
     showPopup();
   }
 
@@ -89,24 +95,35 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function draw(e) {
-    if (!isDrawing || hasRevealed) return;
+    if (!isDrawing || hasRevealed || alreadyScratched) return;
     const pos = getCanvasPosition(e);
     ctx.globalCompositeOperation = "destination-out";
     ctx.beginPath();
-    ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
+    ctx.arc(pos.x, pos.y, 12, 0, Math.PI * 2);
     ctx.fill();
     ctx.closePath();
 
+    scratchCount++;
     if (getFilledPercentage() > 80) {
       revealPrize();
     }
   }
 
-  canvas.addEventListener("mousedown", e => { isDrawing = true; draw(e); });
-  canvas.addEventListener("mouseup", () => { isDrawing = false; });
+  canvas.addEventListener("mousedown", e => {
+    if (alreadyScratched) return;
+    isDrawing = true;
+    draw(e);
+  });
+  canvas.addEventListener("mouseup", () => isDrawing = false);
   canvas.addEventListener("mousemove", draw);
-  canvas.addEventListener("touchstart", e => { isDrawing = true; draw(e); e.preventDefault(); });
-  canvas.addEventListener("touchend", () => { isDrawing = false; });
+
+  canvas.addEventListener("touchstart", e => {
+    if (alreadyScratched) return;
+    isDrawing = true;
+    draw(e);
+    e.preventDefault();
+  });
+  canvas.addEventListener("touchend", () => isDrawing = false);
   canvas.addEventListener("touchmove", draw);
 
   popupClose.addEventListener("click", () => {
