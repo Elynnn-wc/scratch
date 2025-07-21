@@ -11,8 +11,8 @@ const popupPrizeText = document.getElementById('popupPrizeText');
 const popupPrizeImage = document.getElementById('popupPrizeImage');
 const prizeImage = document.getElementById('prizeImage');
 const prizeText = document.getElementById('prizeText');
-const winSound = document.getElementById('winSound');
 const bgMusic = document.getElementById('bgMusic');
+const winSound = document.getElementById('winSound');
 const claimCode = document.getElementById('claimCode');
 
 const prizes = [
@@ -46,10 +46,16 @@ function showPopup(prize) {
   popupPrizeText.innerHTML = `<strong>${prize.text}</strong>`;
   popupPrizeImage.src = prizeImage.src;
   popup.style.display = 'flex';
-  try {
-    bgMusic.pause(); // 停止背景音乐
-    winSound.play(); // 播放中奖音效
-  } catch (e) {}
+
+  // Stop bg music and play win sound
+  if (!bgMusic.paused) {
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
+  }
+
+  winSound.currentTime = 0;
+  winSound.play();
+
   const code = 'RB' + Math.floor(100000 + Math.random() * 900000);
   claimCode.value = code;
   claimCode.style.color = '#111';
@@ -57,33 +63,29 @@ function showPopup(prize) {
   localStorage.setItem('scratched', 'yes');
 }
 
-document.getElementById('popupClose').onclick = () => {
-  popup.style.display = 'none';
-};
+document.getElementById('popupClose').onclick = () => popup.style.display = 'none';
 
 let isDrawing = false;
 let revealed = false;
+let hasStarted = false;
 let scratchDisabled = localStorage.getItem('scratched') === 'yes';
 let resetTap = 0;
-let musicStarted = false;
-
-function startBgMusic() {
-  if (!musicStarted) {
-    bgMusic.play().catch(() => {}); // iOS 必须用户交互后触发
-    musicStarted = true;
-  }
-}
 
 function handleScratch(e) {
   if (scratchDisabled || revealed) return;
   if (!isDrawing) return;
-
-  startBgMusic(); // 刮的时候尝试启动音乐（必须有用户交互）
-
   e.preventDefault();
+
+  // Start bg music on first interaction
+  if (!hasStarted) {
+    hasStarted = true;
+    bgMusic.play().catch(() => {});
+  }
+
   const rect = canvas.getBoundingClientRect();
   const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
   const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+
   ctx.globalCompositeOperation = 'destination-out';
   ctx.beginPath();
   ctx.arc(x, y, 15, 0, Math.PI * 2);
