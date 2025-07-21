@@ -24,6 +24,10 @@ const prizes = [
   { text: 'ANGPAO $88 🧧', chance: 0 }
 ];
 
+// 防止重复播放背景音乐
+let bgMusicStarted = false;
+bgMusic.loop = false;
+
 function getRandomPrize() {
   const weighted = [];
   prizes.forEach((p, i) => {
@@ -47,10 +51,13 @@ function showPopup(prize) {
   popupPrizeImage.src = prizeImage.src;
   popup.style.display = 'flex';
 
-  // 停止背景音乐，播放中奖音效
+  // 停止背景音乐
   bgMusic.pause();
   bgMusic.currentTime = 0;
-  winSound.play().catch(err => console.warn("Audio play failed:", err));
+  bgMusicStarted = false;
+
+  // 播放中奖音效
+  winSound.play().catch(err => console.warn("Win sound failed:", err));
 
   const code = 'RB' + Math.floor(100000 + Math.random() * 900000);
   claimCode.value = code;
@@ -58,7 +65,6 @@ function showPopup(prize) {
   canvas.style.pointerEvents = 'none';
   localStorage.setItem('scratched', 'yes');
 
-  // 显示奖品图层（防止作弊）
   const prizeLayer = document.getElementById('prizeLayer');
   if (prizeLayer) {
     prizeLayer.classList.add('revealed');
@@ -66,8 +72,7 @@ function showPopup(prize) {
 }
 
 document.getElementById('popupClose').onclick = () => {
-  popup.style.display = 'none';
-  bgMusic.play().catch(err => {});
+  // 不允许关闭
 };
 
 let isDrawing = false;
@@ -95,7 +100,7 @@ function handleScratch(e) {
   const percentage = count / (canvas.width * canvas.height) * 100;
   if (percentage > 50 && !revealed) {
     revealed = true;
-    setTimeout(() => showPopup(selectedPrize), 300); // 延迟触发防卡顿
+    showPopup(selectedPrize);
   }
 }
 
@@ -123,15 +128,17 @@ function initCanvas() {
 
 initCanvas();
 
-// 用户点击按钮播放背景音乐（防止 iOS 静音限制）
-const startButton = document.getElementById('startButton');
-if (startButton) {
-  startButton.addEventListener('click', () => {
+// 背景音乐只播放一次（按钮或点击页面）
+function startBgMusicOnce() {
+  if (!bgMusicStarted) {
     bgMusic.play().catch(err => console.warn("BG music play failed:", err));
-  });
+    bgMusicStarted = true;
+  }
 }
 
-// 如果没有按钮，任何点击页面即可播放背景音乐（一次）
-document.addEventListener('click', () => {
-  bgMusic.play().catch(err => console.warn("BG music auto play failed:", err));
-}, { once: true });
+const startButton = document.getElementById('startButton');
+if (startButton) {
+  startButton.addEventListener('click', startBgMusicOnce, { once: true });
+} else {
+  document.addEventListener('click', startBgMusicOnce, { once: true });
+}
