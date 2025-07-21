@@ -5,6 +5,7 @@ body {
   margin: 0;
   padding: 0;
   text-align: center;
+  position: relative;
 }
 
 .container {
@@ -77,13 +78,14 @@ h1 {
 }
 
 #popupContent {
-  background: #222;
+  background: rgba(255, 255, 255, 0.1);
   padding: 30px;
   border-radius: 16px;
   text-align: center;
   color: #fff;
   width: 90%;
   max-width: 400px;
+  backdrop-filter: blur(10px);
 }
 
 #popupPrizeImage {
@@ -125,14 +127,14 @@ h1 {
 }
 
 #secretResetArea {
-  position: absolute;
-  bottom: 5px;
-  right: 5px;
-  width: 30px;
-  height: 30px;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
   opacity: 0;
   cursor: pointer;
-  z-index: 999;
+  z-index: 9999;
 }
 
 @media screen and (max-width: 600px) {
