@@ -105,5 +105,18 @@ function initCanvas() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   if (scratchDisabled) canvas.style.pointerEvents = 'none';
 }
+// 解锁移动端音频播放权限
+document.body.addEventListener('touchstart', function () {
+  const audio = document.getElementById("winSound");
+  if (audio && audio.paused) {
+    audio.play().then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    }).catch((err) => {
+      console.log("Touch audio unlock failed:", err);
+    });
+  }
+}, { once: true });
+
 
 initCanvas();
