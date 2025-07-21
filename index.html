@@ -1,27 +1,152 @@
-<div class="container">
-  <img src="logo.png" class="logo" alt="Logo">
-  <div class="title">🎁 Scratch & Win Your Angpao! 🎁</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scratch & Win</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #111;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      text-align: center;
+    }
+    header {
+      padding: 20px;
+    }
+    header img {
+      max-height: 60px;
+    }
+    h1 {
+      margin: 10px 0;
+      font-size: 1.8rem;
+    }
+    #scratchContainer {
+      margin: 30px auto;
+      max-width: 350px;
+      position: relative;
+    }
+    #prizeLayer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 300px;
+      height: 150px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    #prizeImage {
+      width: 50px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    #prizeText {
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    canvas {
+      border: 3px solid #fff;
+      border-radius: 10px;
+      background: #aaa;
+      display: block;
+    }
+    #popupOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.85);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    #popup {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      color: #000;
+      text-align: center;
+      max-width: 300px;
+    }
+    #popup img {
+      width: 60px;
+    }
+    #popup p {
+      margin: 10px 0;
+      font-size: 1.2rem;
+    }
+    #claimCode {
+      font-weight: bold;
+      font-size: 1.2rem;
+      letter-spacing: 2px;
+      background: #eee;
+      padding: 5px 10px;
+      display: inline-block;
+      border-radius: 5px;
+    }
+    #copyCodeBtn {
+      margin-top: 10px;
+      background: #000;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #popupClose {
+      display: block;
+      margin-top: 15px;
+      text-decoration: underline;
+      color: #007bff;
+      cursor: pointer;
+    }
+    #secretResetArea {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      width: 30px;
+      height: 30px;
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://royalebet.net/front/include/images/royalebet.png" alt="Logo" />
+    <h1>🎉 Scratch & Win a Surprise ANGPAO! 🧧</h1>
+  </header>
 
-  <!-- 刮刮卡 Canvas -->
-  <canvas id="scratchCanvas" width="300" height="150"></canvas>
-
-  <!-- 奖品显示区 -->
-  <div id="prizeLayer">
-    <img id="prizeImage" src="" alt="Prize Image">
-    <div id="prizeText"></div>
+  <div id="scratchContainer">
+    <canvas id="scratchCanvas" width="300" height="150"></canvas>
+    <div id="prizeLayer">
+      <img id="prizeImage" src="" alt="Prize" />
+      <div id="prizeText"></div>
+    </div>
   </div>
-</div>
 
-<!-- 弹窗 -->
-<div id="popupOverlay">
-  <div id="popupBox">
-    <img id="popupPrizeImage" src="" alt="Popup Prize">
-    <div id="popupPrizeText"></div>
-    <div id="claimCode"></div>
-    <button id="copyCodeBtn">Copy Code</button>
-    <button id="popupClose">Close</button>
+  <div id="popupOverlay">
+    <div id="popup">
+      <img id="popupPrizeImage" src="" alt="Prize" />
+      <p id="popupPrizeText"></p>
+      <p style="margin-bottom:5px; font-weight:bold;">🎟️ Claim Code:</p>
+      <div id="claimCode">XXXXXX</div>
+      <br />
+      <button id="copyCodeBtn">Copy Code</button>
+      <div id="popupClose">Close</div>
+    </div>
   </div>
-</div>
 
-<!-- 隐藏重置按钮 -->
-<div id="secretResetArea"></div>
+  <div id="secretResetArea"></div>
+
+  <script src="main.js"></script>
+</body>
+</html>
