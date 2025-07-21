@@ -3,38 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scratch & Win 🎉</title>
+  <title>Scratch & Win</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <img src="https://royalebet.net/front/include/images/royalebet.png" class="logo" alt="Logo" />
-    <h1>🎯 Scratch & Win Lucky Angpao 🧧</h1>
-    <p class="tip">Use your finger to scratch and reveal your prize!</p>
+    <img src="https://royalebet.net/front/include/images/royalebet.png" alt="Logo" class="logo" />
 
-    <div class="scratch-area">
+    <h1 class="title">🎉 Scratch & Win ANGPAO 🧧</h1>
+    <p class="instructions">Use your finger to scratch the card below!</p>
+
+    <div class="scratch-card">
       <div id="prizeLayer">
-        <img src="https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png" alt="Prize" />
-        <div id="prizeText" class="prize-text"></div>
+        <img id="prizeImage" src="" alt="Prize" style="display:none;" />
+        <div id="prizeText" style="display:none;"></div>
       </div>
-      <canvas id="scratchCanvas"></canvas>
+      <canvas id="scratchCanvas" width="300" height="150"></canvas>
     </div>
 
-    <!-- Hidden reset area -->
-    <div id="secretResetArea" title="Admin Reset"></div>
-  </div>
-
-  <!-- Popup for result -->
-  <div id="popupOverlay">
-    <div class="popup">
-      <button id="popupClose">✖</button>
-      <h2>🎉 Congratulations!</h2>
-      <img id="popupPrizeImage" />
-      <p id="popupPrizeText"></p>
-      <p style="margin-bottom:5px; font-weight:bold;">🎟️ Claim Code:</p>
-      <input type="text" id="claimCode" readonly />
-      <button id="copyCodeBtn">Copy Code</button>
+    <div id="popupOverlay">
+      <div id="popupContent">
+        <img id="popupPrizeImage" src="" alt="Prize" />
+        <div id="popupPrizeText"></div>
+        <p style="margin: 10px 0; font-weight: bold;">🎟️ Claim Code:</p>
+        <div id="claimCode" style="font-size: 18px; margin-bottom: 10px;"></div>
+        <button id="copyCodeBtn">Copy Code</button>
+        <button id="popupClose">Close</button>
+      </div>
     </div>
+
+    <div id="secretResetArea" title="Admin Only (Click 5x to reset)"></div>
   </div>
 
   <script src="main.js"></script>
