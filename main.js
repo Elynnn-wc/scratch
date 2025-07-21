@@ -1,10 +1,12 @@
+// main.js
+
 const canvas = document.getElementById('scratchCanvas');
 const ctx = canvas.getContext('2d');
 let isDrawing = false;
 let revealed = false;
 let resetClickCount = 0;
 const resetClickThreshold = 5;
-const scratchLimit = 0.5; // Reduced to 50% for better UX
+const scratchLimit = 0.8; // 80%
 
 const prizeLayer = document.getElementById('prizeLayer');
 const prizeImage = document.getElementById('prizeImage');
@@ -19,7 +21,7 @@ const popupClose = document.getElementById('popupClose');
 const secretResetArea = document.getElementById('secretResetArea');
 
 const prizes = [
-  { name: 'ANGPAO $3 �', chance: 0.1 },
+  { name: 'ANGPAO $3 🧧', chance: 0.1 },
   { name: 'ANGPAO $5 🧧', chance: 0.3 },
   { name: 'ANGPAO $8 🧧', chance: 0.4 },
   { name: 'ANGPAO $12 🧧', chance: 0.2 },
@@ -29,19 +31,8 @@ const prizes = [
 
 const prizeImageSrc = 'https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png';
 
-// Initialize canvas and game state
-function initCanvas() {
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
-  
-  // Draw the scratchable surface
-  ctx.fillStyle = '#999999';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.globalCompositeOperation = 'source-over';
-}
-
 let canScratch = localStorage.getItem('hasScratched') !== 'true';
-let currentPrize = selectPrize();
+let currentPrize;
 
 function selectPrize() {
   const rand = Math.random();
@@ -63,12 +54,8 @@ function getBrushPos(e) {
 function drawPoint(x, y) {
   ctx.globalCompositeOperation = 'destination-out';
   ctx.beginPath();
-  ctx.arc(x, y, 25, 0, Math.PI * 2); // Increased brush size
+  ctx.arc(x, y, 25, 0, Math.PI * 2);
   ctx.fill();
-  
-  // Show prize layer where scratched
-  ctx.globalCompositeOperation = 'source-atop';
-  ctx.drawImage(prizeImage, 0, 0, canvas.width, canvas.height);
 }
 
 function getClearedPercentage() {
@@ -77,7 +64,7 @@ function getClearedPercentage() {
   for (let i = 3; i < imgData.data.length; i += 4) {
     if (imgData.data[i] === 0) cleared++;
   }
-  return cleared / (canvas.width * canvas.height);
+  return cleared / (canvas.width * canvas.height) * 4;
 }
 
 function checkScratchPercent() {
@@ -92,104 +79,79 @@ function revealPrize() {
   revealed = true;
   canScratch = false;
   localStorage.setItem('hasScratched', 'true');
-  
+
+  // Slowly fade in prize content
+  prizeImage.style.opacity = 0;
+  prizeText.style.opacity = 0;
+  prizeImage.style.display = 'block';
+  prizeText.style.display = 'block';
+
+  setTimeout(() => { prizeImage.style.opacity = 1; }, 50);
+  setTimeout(() => { prizeText.style.opacity = 1; }, 150);
+
   setTimeout(() => {
     popupOverlay.style.display = 'flex';
-    popupPrizeImage.src = prizeImageSrc;
+    popupPrizeImage.src = prizeImage.src;
     popupPrizeText.textContent = currentPrize.name;
     claimCode.textContent = 'RB-' + Math.random().toString(36).substring(2, 8).toUpperCase();
   }, 1000);
 }
 
 function resetGame() {
-  initCanvas();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = '#999999';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
   revealed = false;
   canScratch = true;
   localStorage.removeItem('hasScratched');
   popupOverlay.style.display = 'none';
-  
+  prizeImage.style.display = 'none';
+  prizeText.style.display = 'none';
+
   currentPrize = selectPrize();
   prizeText.textContent = currentPrize.name;
   prizeImage.src = prizeImageSrc;
-  
-  // Reset prize layer visibility
-  prizeImage.style.opacity = '0';
-  prizeText.style.opacity = '0';
 }
 
 function scratchHandler(e) {
   if (!canScratch || revealed) return;
-  
   const pos = getBrushPos(e);
   drawPoint(pos.x, pos.y);
-  
-  // Gradually show prize as user scratches
-  const percent = getClearedPercentage();
-  prizeImage.style.opacity = percent;
-  prizeText.style.opacity = percent;
-  
   checkScratchPercent();
   e.preventDefault();
 }
 
-// Event Listeners
-canvas.addEventListener('mousedown', (e) => { 
-  isDrawing = true; 
-  scratchHandler(e); 
-});
-canvas.addEventListener('mousemove', (e) => { 
-  if (isDrawing) scratchHandler(e); 
-});
-canvas.addEventListener('mouseup', () => { 
-  isDrawing = false; 
-});
-canvas.addEventListener('touchstart', (e) => { 
-  isDrawing = true; 
-  scratchHandler(e); 
-});
-canvas.addEventListener('touchmove', (e) => { 
-  if (isDrawing) scratchHandler(e); 
-});
-canvas.addEventListener('touchend', () => { 
-  isDrawing = false; 
-});
+canvas.addEventListener('mousedown', (e) => { isDrawing = true; scratchHandler(e); });
+canvas.addEventListener('mousemove', (e) => { if (isDrawing) scratchHandler(e); });
+canvas.addEventListener('mouseup', () => { isDrawing = false; });
+canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratchHandler(e); });
+canvas.addEventListener('touchmove', (e) => { if (isDrawing) scratchHandler(e); });
+canvas.addEventListener('touchend', () => { isDrawing = false; });
 
 popupClose.addEventListener('click', () => {
   popupOverlay.style.display = 'none';
 });
 
 copyCodeBtn.addEventListener('click', () => {
-  navigator.clipboard.writeText(claimCode.textContent)
-    .then(() => alert('Claim code copied!'))
-    .catch(() => alert('Failed to copy code'));
+  navigator.clipboard.writeText(claimCode.textContent);
+  alert('Claim code copied!');
 });
 
 secretResetArea.addEventListener('click', () => {
   resetClickCount++;
   if (resetClickCount >= resetClickThreshold) {
-    resetGame();
     resetClickCount = 0;
-    alert('Game has been reset!');
+    resetGame();
   }
 });
 
-// Initialize the game
-window.addEventListener('load', () => {
-  initCanvas();
-  
-  if (canScratch) {
-    resetGame();
-  } else {
-    prizeImage.style.display = 'block';
-    prizeText.style.display = 'block';
-    prizeImage.style.opacity = '1';
-    prizeText.style.opacity = '1';
-    prizeText.textContent = localStorage.getItem('lastPrize') || 'Try again later';
-  }
-  
-  // Set the prize for this session
-  currentPrize = selectPrize();
-  prizeText.textContent = currentPrize.name;
-  prizeImage.src = prizeImageSrc;
-  localStorage.setItem('lastPrize', currentPrize.name);
-});
+if (canScratch) {
+  resetGame();
+} else {
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = '#999999';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  prizeImage.style.display = 'block';
+  prizeText.style.display = 'block';
+}
