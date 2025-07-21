@@ -1,159 +1,159 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const canvas = document.getElementById("scratchCanvas");
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  const prizeLayer = document.getElementById("prizeLayer");
-  const prizeImage = document.getElementById("prizeImage");
-  const prizeText = document.getElementById("prizeText");
-  const popupOverlay = document.getElementById("popupOverlay");
-  const popupPrizeImage = document.getElementById("popupPrizeImage");
-  const popupPrizeText = document.getElementById("popupPrizeText");
-  const claimCodeInput = document.getElementById("claimCode");
-  const copyCodeBtn = document.getElementById("copyCodeBtn");
-  const popupClose = document.getElementById("popupClose");
-  const resetArea = document.getElementById("secretResetArea");
+const canvas = document.getElementById("scratchCanvas");
+const ctx = canvas.getContext("2d");
+const prizeLayer = document.getElementById("prizeLayer");
+const prizeImage = document.getElementById("prizeImage");
+const prizeText = document.getElementById("prizeText");
+const popupOverlay = document.getElementById("popupOverlay");
+const popupPrizeImage = document.getElementById("popupPrizeImage");
+const popupPrizeText = document.getElementById("popupPrizeText");
+const claimCode = document.getElementById("claimCode");
+const copyCodeBtn = document.getElementById("copyCodeBtn");
+const popupClose = document.getElementById("popupClose");
+const secretResetArea = document.getElementById("secretResetArea");
 
-  let isDrawing = false;
-  let hasRevealed = false;
-  let resetClickCount = 0;
-  let selectedPrize = null;
+let isDrawing = false;
+let revealed = false;
+let resetCount = 0;
+let revealedPixels = 0;
+let totalPixels = 0;
 
-  const STORAGE_KEY = "hasScratched";
+// 🎁 奖品列表
+const prizes = [
+  { text: "ANGPAO $3 🧧", image: "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png", weight: 10 },
+  { text: "ANGPAO $5 🧧", image: "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png", weight: 30 },
+  { text: "ANGPAO $8 🧧", image: "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png", weight: 40 },
+  { text: "ANGPAO $12 🧧", image: "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png", weight: 20 },
+  { text: "ANGPAO $68 🧧", image: "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png", weight: 0 },
+  { text: "ANGPAO $88 🧧", image: "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png", weight: 0 }
+];
 
-  const prizes = [
-    { name: "ANGPAO $3 🧧", weight: 10 },
-    { name: "ANGPAO $5 🧧", weight: 30 },
-    { name: "ANGPAO $8 🧧", weight: 40 },
-    { name: "ANGPAO $12 🧧", weight: 20 },
-    { name: "ANGPAO $68 🧧", weight: 0 },
-    { name: "ANGPAO $88 🧧", weight: 0 },
-  ];
-
-  const prizeImageUrl = "https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png";
-
-  function pickPrize() {
-    const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
-    let random = Math.random() * totalWeight;
-    for (const prize of prizes) {
-      if (random < prize.weight) return prize;
-      random -= prize.weight;
-    }
-    return prizes[0];
+// 随机奖品
+function pickPrize() {
+  const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+  let rand = Math.random() * totalWeight;
+  for (const prize of prizes) {
+    if (rand < prize.weight) return prize;
+    rand -= prize.weight;
   }
+  return prizes[0];
+}
 
-  function generateCode() {
-    return "RB" + Math.random().toString(36).substring(2, 8).toUpperCase();
-  }
+let selectedPrize = pickPrize();
 
-  function showPopup() {
-    popupPrizeImage.src = prizeImageUrl;
-    popupPrizeText.textContent = selectedPrize.name;
-    claimCodeInput.value = generateCode();
+// 初始化 Canvas
+function resizeCanvas() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  ctx.fillStyle = "#999";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  totalPixels = canvas.width * canvas.height;
+}
+
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+// 显示奖品
+function revealPrize() {
+  revealed = true;
+  prizeImage.src = selectedPrize.image;
+  prizeText.textContent = selectedPrize.text;
+  prizeImage.style.display = "block";
+  prizeText.style.display = "block";
+  setTimeout(() => {
+    popupPrizeImage.src = selectedPrize.image;
+    popupPrizeText.textContent = selectedPrize.text;
+    claimCode.value = "RB" + Math.floor(100000 + Math.random() * 900000);
     popupOverlay.style.display = "flex";
+    new Audio("https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3").play();
+  }, 500);
+}
+
+// 刮奖处理
+function scratch(x, y) {
+  if (revealed) return;
+  ctx.globalCompositeOperation = "destination-out";
+  ctx.beginPath();
+  ctx.arc(x, y, 15, 0, Math.PI * 2);
+  ctx.fill();
+  revealedPixels += Math.PI * 15 * 15;
+  let percent = revealedPixels / totalPixels;
+  if (percent > 0.3) {
+    prizeImage.style.display = "block";
   }
-
-  function resetGame() {
-    hasRevealed = false;
-    localStorage.removeItem(STORAGE_KEY);
-    selectedPrize = pickPrize();
-
-    // Fill canvas with gray
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#999";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Hide prize layer until scratched
-    prizeLayer.style.visibility = "hidden";
-    prizeImage.src = prizeImageUrl;
-    prizeText.textContent = selectedPrize.name;
+  if (percent > 0.5) {
+    prizeText.style.display = "block";
   }
-
-  function revealPrize() {
-    hasRevealed = true;
-    localStorage.setItem(STORAGE_KEY, "true");
-    prizeLayer.style.visibility = "visible";
-    showPopup();
+  if (percent > 0.8 && !revealed) {
+    revealPrize();
   }
+}
 
-  function getFilledPercentage() {
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const pixels = imageData.data;
-    let cleared = 0;
-    for (let i = 3; i < pixels.length; i += 4) {
-      if (pixels[i] < 128) cleared++;
-    }
-    return (cleared / (canvas.width * canvas.height)) * 100;
-  }
-
-  function getCanvasPosition(e) {
-    const rect = canvas.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+// 事件监听
+function getOffset(e) {
+  const rect = canvas.getBoundingClientRect();
+  if (e.touches) {
     return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY
+      x: e.touches[0].clientX - rect.left,
+      y: e.touches[0].clientY - rect.top
+    };
+  } else {
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
     };
   }
+}
 
-  function draw(e) {
-    if (!isDrawing || hasRevealed || localStorage.getItem(STORAGE_KEY)) return;
+canvas.addEventListener("mousedown", e => {
+  if (revealed) return;
+  isDrawing = true;
+  const pos = getOffset(e);
+  scratch(pos.x, pos.y);
+});
 
-    const pos = getCanvasPosition(e);
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.beginPath();
-    ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.closePath();
+canvas.addEventListener("mousemove", e => {
+  if (!isDrawing || revealed) return;
+  const pos = getOffset(e);
+  scratch(pos.x, pos.y);
+});
 
-    if (getFilledPercentage() > 80 && !hasRevealed) {
-      revealPrize();
-    }
-  }
+canvas.addEventListener("mouseup", () => {
+  isDrawing = false;
+});
 
-  canvas.addEventListener("mousedown", e => {
-    if (localStorage.getItem(STORAGE_KEY)) return;
-    isDrawing = true;
-    draw(e);
-  });
+canvas.addEventListener("touchstart", e => {
+  if (revealed) return;
+  isDrawing = true;
+  const pos = getOffset(e);
+  scratch(pos.x, pos.y);
+});
 
-  canvas.addEventListener("mousemove", draw);
-  canvas.addEventListener("mouseup", () => isDrawing = false);
-  canvas.addEventListener("mouseleave", () => isDrawing = false);
+canvas.addEventListener("touchmove", e => {
+  if (!isDrawing || revealed) return;
+  const pos = getOffset(e);
+  scratch(pos.x, pos.y);
+});
 
-  canvas.addEventListener("touchstart", e => {
-    if (localStorage.getItem(STORAGE_KEY)) return;
-    isDrawing = true;
-    draw(e);
-    e.preventDefault();
-  });
+canvas.addEventListener("touchend", () => {
+  isDrawing = false;
+});
 
-  canvas.addEventListener("touchmove", draw);
-  canvas.addEventListener("touchend", () => isDrawing = false);
+// 复制按钮
+copyCodeBtn.addEventListener("click", () => {
+  claimCode.select();
+  document.execCommand("copy");
+  copyCodeBtn.textContent = "Copied!";
+});
 
-  popupClose.addEventListener("click", () => {
-    popupOverlay.style.display = "none";
-  });
+// 关闭弹窗后不再允许刮
+popupClose.addEventListener("click", () => {
+  popupOverlay.style.display = "none";
+});
 
-  copyCodeBtn.addEventListener("click", () => {
-    claimCodeInput.select();
-    document.execCommand("copy");
-  });
-
-  resetArea.addEventListener("click", () => {
-    resetClickCount++;
-    if (resetClickCount >= 5) {
-      resetClickCount = 0;
-      resetGame();
-    }
-  });
-
-  // Init
-  if (!localStorage.getItem(STORAGE_KEY)) {
-    resetGame();
-  } else {
-    // 已经刮过则直接显示遮罩但不能再次刮
-    ctx.fillStyle = "#999";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+// 隐藏区域管理员重置
+secretResetArea.addEventListener("click", () => {
+  resetCount++;
+  if (resetCount >= 5) {
+    location.reload();
   }
 });
