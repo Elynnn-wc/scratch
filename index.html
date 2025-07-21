@@ -2,44 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Scratch & Win 🧧</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scratch & Win 🎉</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="container">
+    <img src="https://royalebet.net/front/include/images/royalebet.png" class="logo" alt="Logo" />
+    <h1>🎯 Scratch & Win Lucky Angpao 🧧</h1>
+    <p class="tip">Use your finger to scratch and reveal your prize!</p>
 
-  <!-- Company Logo -->
-  <img src="https://royalebet.net/front/include/images/royalebet.png" alt="Logo" style="width:180px; margin-bottom: 10px;" />
-
-  <!-- Title -->
-  <h2>Scratch & Win 🧧</h2>
-  <p style="font-size:14px; color:#aaa;">Use your finger or mouse to scratch!</p>
-
-  <!-- Scratch Card -->
-  <div id="scratchContainer">
-    <canvas id="scratchCanvas"></canvas>
-    <div id="prizeLayer">
-      <img id="prizeImage" src="" alt="Prize" />
-      <p id="prizeText"></p>
+    <div class="scratch-area">
+      <div id="prizeLayer">
+        <img src="https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png" alt="Prize" />
+        <div id="prizeText" class="prize-text"></div>
+      </div>
+      <canvas id="scratchCanvas"></canvas>
     </div>
+
+    <!-- Hidden reset area -->
+    <div id="secretResetArea" title="Admin Reset"></div>
   </div>
 
-  <!-- Popup -->
+  <!-- Popup for result -->
   <div id="popupOverlay">
-    <div id="popupContent">
-      <img id="popupPrizeImage" src="" alt="Prize" />
+    <div class="popup">
+      <button id="popupClose">✖</button>
+      <h2>🎉 Congratulations!</h2>
+      <img id="popupPrizeImage" />
       <p id="popupPrizeText"></p>
       <p style="margin-bottom:5px; font-weight:bold;">🎟️ Claim Code:</p>
       <input type="text" id="claimCode" readonly />
       <button id="copyCodeBtn">Copy Code</button>
-      <div id="popupClose">Close</div>
     </div>
   </div>
 
-  <!-- Admin Reset Hidden Area -->
-  <div id="secretResetArea"></div>
-
-  <!-- JS -->
   <script src="main.js"></script>
 </body>
 </html>
