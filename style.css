@@ -1,180 +1,196 @@
+/* Reset + General */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #111;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 100vh;
   margin: 0;
-  padding: 20px;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #111;
+  color: #fff;
+  overflow-x: hidden;
+  position: relative;
 }
 
+h1, h2, h3, p {
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: #4fd1c5;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  background-color: #ff4d4d;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  font-size: 16px;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background-color: #e03a3a;
+}
+
+/* Header */
 header {
   text-align: center;
-  margin-bottom: 20px;
+  padding: 20px 10px;
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #333;
 }
 
 header img {
-  height: 60px;
-  margin-bottom: 10px;
+  max-width: 160px;
+  margin-bottom: 8px;
 }
 
 header h1 {
-  font-size: 24px;
-  margin: 0;
-  color: #fff;
+  font-size: 28px;
+  color: #fdd835;
+}
+
+/* Scratch Section */
+#instruction {
+  text-align: center;
+  font-size: 16px;
+  margin: 15px 0;
+  color: #ccc;
 }
 
 #scratchContainer {
   position: relative;
   width: 300px;
-  height: 150px;
-  margin-bottom: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  margin: 0 auto;
+  background-color: #222;
+  border: 2px dashed #888;
   border-radius: 12px;
   overflow: hidden;
-  background: #fff;
-}
-
-#instruction {
-  margin-bottom: 25px;
-  font-size: 16px;
-  color: #ccc;
-  text-align: center;
+  padding: 10px;
 }
 
 #prizeLayer {
   position: absolute;
-  top: 0;
+  top: 10px;
   left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
+  right: 0;
   z-index: 1;
+  text-align: center;
 }
 
 #prizeImage {
-  width: 50px;
-  height: 50px;
+  max-width: 80px;
   margin-bottom: 10px;
 }
 
 #prizeText {
-  font-size: 16px;
-  color: #333;
+  font-size: 18px;
   font-weight: bold;
+  color: #ffeb3b;
 }
 
+/* Scratch Canvas */
 #scratchCanvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: relative;
   z-index: 2;
+  display: block;
+  margin: 0 auto;
   cursor: pointer;
 }
 
+/* Reset Button */
+#resetBtn {
+  display: block;
+  margin: 20px auto;
+  background-color: #333;
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: 6px;
+}
+
+/* Popup */
 #popupOverlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.6);
   display: none;
-  justify-content: center;
-  align-items: center;
+  position: fixed;
   z-index: 999;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background: rgba(0, 0, 0, 0.75);
 }
 
 #popupBox {
-  background: #fff;
-  padding: 30px;
-  border-radius: 15px;
+  background-color: #222;
+  border-radius: 12px;
+  padding: 30px 20px;
+  max-width: 300px;
+  margin: 10% auto;
   text-align: center;
-  width: 280px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  animation: popIn 0.4s ease-out;
   position: relative;
+  color: #fff;
+  box-shadow: 0 0 10px #000;
+}
+
+#popupBox img {
+  max-width: 80px;
+  margin-bottom: 12px;
 }
 
 #popupBox h2 {
-  margin-top: 0;
-  color: #28a745;
-}
-
-#popupPrizeImage {
-  max-width: 80px;
-  margin-bottom: 15px;
+  color: #ffeb3b;
+  font-size: 22px;
+  margin-bottom: 10px;
 }
 
 #popupPrizeText {
   font-size: 18px;
-  color: #333;
-  font-weight: bold;
+  color: #fdd835;
 }
 
-#popupClose {
-  position: absolute;
-  top: 8px;
-  right: 15px;
-  font-size: 22px;
-  color: #aaa;
-  cursor: pointer;
-}
-
-#popupClose:hover {
-  color: #333;
-}
-
-#resetBtn {
-  opacity: 0;
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-}
-
-#claimCode {
+#claimCodeBox input {
+  width: 120px;
+  padding: 6px;
+  margin-right: 8px;
+  font-size: 14px;
   text-align: center;
-  font-size: 16px;
-  padding: 5px 10px;
-  width: 130px;
-  margin-right: 10px;
-  color: #111 !important;
-  background: #f2f2f2;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-weight: bold;
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 6px;
 }
 
-#secretResetArea {
-  position: fixed;
-  bottom: 5px;
-  left: 5px;
-  width: 30px;
-  height: 30px;
-  opacity: 0.01;
-  z-index: 9999;
+/* Footer and Info Sections */
+section, footer {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px 10px;
 }
 
-@keyframes popIn {
-  from { transform: scale(0.7); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+section h3 {
+  color: #fdd835;
+  margin-bottom: 10px;
 }
-/* 防止用户通过长按拖动、选中文字、或拖动图片查看奖品 */
-#scratchCanvas {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-  -webkit-user-drag: none;
-  touch-action: none;
+
+footer {
+  font-size: 13px;
+  text-align: center;
+  color: #bbb;
+  margin-bottom: 40px;
 }
-#prizeLayer img, #prizeLayer p {
-  pointer-events: none;
-  user-select: none;
+
+/* Mobile-friendly */
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 24px;
+  }
+  #scratchCanvas {
+    width: 100%;
+  }
+  #popupBox {
+    width: 90%;
+    margin-top: 20%;
+  }
 }
