@@ -3,23 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Scratch & Win 🎉</title>
+  <title>Scratch & Win 🧧</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
   <!-- Company Logo -->
-  <img src="https://royalebet.net/front/include/images/royalebet.png" alt="Company Logo" style="width:180px; margin-bottom: 10px;"/>
+  <img src="https://royalebet.net/front/include/images/royalebet.png" alt="Logo" style="width:180px; margin-bottom: 10px;" />
 
   <!-- Title -->
-  <h2 style="margin-bottom: 5px;">Scratch & Win 🧧</h2>
-  <p style="font-size:14px; color:#666;">Use your finger or mouse to scratch!</p>
+  <h2>Scratch & Win 🧧</h2>
+  <p style="font-size:14px; color:#aaa;">Use your finger or mouse to scratch!</p>
 
-  <!-- Scratch Card Container -->
+  <!-- Scratch Card -->
   <div id="scratchContainer">
     <canvas id="scratchCanvas"></canvas>
     <div id="prizeLayer">
       <img id="prizeImage" src="" alt="Prize" />
-      <p id="prizeText" style="font-size:18px; font-weight:bold;"></p>
+      <p id="prizeText"></p>
     </div>
   </div>
 
@@ -27,7 +28,7 @@
   <div id="popupOverlay">
     <div id="popupContent">
       <img id="popupPrizeImage" src="" alt="Prize" />
-      <p id="popupPrizeText" style="font-weight:bold; font-size:18px; margin-top:10px;"></p>
+      <p id="popupPrizeText"></p>
       <p style="margin-bottom:5px; font-weight:bold;">🎟️ Claim Code:</p>
       <input type="text" id="claimCode" readonly />
       <button id="copyCodeBtn">Copy Code</button>
@@ -35,7 +36,7 @@
     </div>
   </div>
 
-  <!-- Hidden Reset Area -->
+  <!-- Admin Reset Hidden Area -->
   <div id="secretResetArea"></div>
 
   <!-- JS -->
