@@ -38,12 +38,11 @@ function getRandomPrize() {
 }
 
 let scratchDisabled = false;
-const now = new Date();
-const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-const nextMidnight = todayMidnight + 24 * 60 * 60 * 1000;
+const nowDate = new Date();
+const today = nowDate.toISOString().split('T')[0];
+const lastPlay = localStorage.getItem('lastPlayDate');
 
-const scratchedAt = localStorage.getItem('scratchedAt');
-if (scratchedAt && parseInt(scratchedAt, 10) >= todayMidnight) {
+if (lastPlay === today) {
   scratchDisabled = true;
 }
 
@@ -71,13 +70,10 @@ function showPopup(prize) {
   claimCode.value = code;
   claimCode.style.color = '#111';
   canvas.style.pointerEvents = 'none';
-  localStorage.setItem('scratched', 'yes');
-  localStorage.setItem('scratchedAt', Date.now());
+  localStorage.setItem('lastPlayDate', today);
 
   const prizeLayer = document.getElementById('prizeLayer');
-  if (prizeLayer) {
-    prizeLayer.classList.add('revealed');
-  }
+  if (prizeLayer) prizeLayer.classList.add('revealed');
 }
 
 document.getElementById('popupClose').onclick = () => {};
@@ -103,7 +99,7 @@ function handleScratch(e) {
   for (let i = 0; i < pixels.data.length; i += 4) {
     if (pixels.data[i + 3] === 0) count++;
   }
-  const percentage = count / (canvas.width * canvas.height) * 100;
+  const percentage = (count / (canvas.width * canvas.height)) * 100;
   if (percentage > 50 && !revealed) {
     revealed = true;
     showPopup(selectedPrize);
@@ -114,14 +110,13 @@ canvas.addEventListener(downEvent, () => {
   if (scratchDisabled) return;
   isDrawing = true;
 });
-canvas.addEventListener(upEvent, () => isDrawing = false);
+canvas.addEventListener(upEvent, () => (isDrawing = false));
 canvas.addEventListener(moveEvent, handleScratch);
 
 document.getElementById('secretResetArea').addEventListener('click', () => {
   resetTap++;
   if (resetTap >= 5) {
-    localStorage.removeItem('scratched');
-    localStorage.removeItem('scratchedAt');
+    localStorage.removeItem('lastPlayDate');
     localStorage.removeItem('scratchPrize');
     location.reload();
   }
@@ -162,28 +157,28 @@ if (startButton) {
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('selectstart', e => e.preventDefault());
 
-// ✅ 每日00:00倒计时逻辑
-function startCountdown(toTimestamp) {
-  function updateCountdown() {
-    const now = Date.now();
-    const diff = toTimestamp - now;
-    if (diff <= 0) {
+// 倒计时至午夜自动解锁
+(function countdownToMidnight() {
+  const now = Date.now();
+  const nextMid = new Date();
+  nextMid.setHours(24, 0, 0, 0);
+  const diff = nextMid.getTime() - now;
+
+  function update() {
+    const ms = nextMid.getTime() - Date.now();
+    if (ms <= 0) {
       countdownEl.innerText = '✅ Ready to Scratch!';
-      countdownEl.style.color = '#4CAF50';
+      countdownEl.classList.add('ready');
       canvas.style.pointerEvents = 'auto';
       scratchDisabled = false;
-      localStorage.removeItem('scratchedAt');
       return;
     }
-    const hours = Math.floor(diff / 3600000);
-    const minutes = Math.floor((diff % 3600000) / 60000);
-    const seconds = Math.floor((diff % 60000) / 1000);
-    countdownEl.innerText = `Come back in ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    requestAnimationFrame(updateCountdown);
+    const h = String(Math.floor(ms / 3600000)).padStart(2, '0');
+    const m = String(Math.floor((ms % 3600000) / 60000)).padStart(2, '0');
+    const s = String(Math.floor((ms % 60000) / 1000)).padStart(2, '0');
+    countdownEl.innerText = `Come back in ${h}:${m}:${s}`;
+    if (scratchDisabled) requestAnimationFrame(update);
   }
-  updateCountdown();
-}
-
-if (scratchDisabled && scratchedAt) {
-  startCountdown(nextMidnight);
-}
+  canvas.style.pointerEvents = scratchDisabled ? 'none' : 'auto';
+  update();
+})();
