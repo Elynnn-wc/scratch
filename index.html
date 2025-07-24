@@ -6,59 +6,18 @@
   <title>Scratch & Win</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    #popupBox {
-      position: relative;
-    }
-
-    #popupClose {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 24px;
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
-    }
-
-    #popupClose:hover {
-      color: red;
-    }
-
-    #countdownBox {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
-
-    #countdownMessage {
-      background: linear-gradient(135deg, #ff74d4, #f11010);
-      color: white;
-      font-weight: bold;
-      padding: 8px 18px;
-      border-radius: 50px;
-      font-size: 16px;
-      text-align: center;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-      max-width: max-content;
-    }
-
-    #countdownMessage.ready {
-      background: #00cc66;
-      color: white;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); box-shadow: 0 0 0 rgba(0, 204, 102, 0.7); }
-      50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(0, 204, 102, 0.9); }
-      100% { transform: scale(1); box-shadow: 0 0 0 rgba(0, 204, 102, 0.7); }
-    }
+    #popupBox { position: relative; }
+    #popupClose { position: absolute; top: 10px; right: 10px; font-size: 24px; background: none; border: none; color: white; cursor: pointer; }
+    #popupClose:hover { color: red; }
+    /* 倒计时样式 */
+    #countdownBox { display: flex; justify-content: center; margin: 20px 0; }
+    #countdownMessage { background: linear-gradient(135deg, #ff74d4, #f11010); color: white; font-weight: bold; padding: 10px 20px; border-radius: 30px; font-size: 16px; text-align: center; transition: background 0.3s; }
+    #countdownMessage.ready { background: #00cc66; }
   </style>
 </head>
 <body>
   <header>
-    <img src="https://royalebet.net/front/include/images/royalebet.png" alt="Company Logo">
+    <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=476,fit=crop,q=95/mv0J5WEbj8hgVW6P/livebet777_logo-A1a51POD6MszgRX4.png" alt="Company Logo">
     <h1>🎉 Scratch & Win 🧧 </h1>
   </header>
 
@@ -66,12 +25,12 @@
 
   <div id="scratchContainer">
     <div id="prizeLayer">
-      <img id="prizeImage" src="https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png" alt="Prize" draggable="false" oncontextmenu="return false;">
+      <img id="prizeImage" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSn9DDOH-0D-NAl4n1NIYLXdmZ9gpsvh-ekqA&s" alt="Prize" draggable="false" oncontextmenu="return false;">
       <p id="prizeText" oncontextmenu="return false;"><strong></strong></p>
     </div>
     <canvas id="scratchCanvas" width="300" height="150"></canvas>
 
-    <!-- 插入倒计时提示区域 -->
+    <!-- 倒计时提示区 -->
     <div id="countdownBox">
       <p id="countdownMessage">Checking availability...</p>
     </div>
@@ -79,7 +38,7 @@
 
   <button id="resetBtn">Reset</button>
   <div id="secretResetArea"></div>
-
+  
   <audio id="bgMusic" src="https://github.com/Elynnn-wc/my-music/raw/refs/heads/main/Tuning%20No.2.mp3" loop></audio>
   <audio id="winSound" src="https://github.com/Elynnn-wc/my-music/raw/refs/heads/main/brawl-stars-win-winning-sounds-sound-effect-brawl-stars-hd-sound-effects.mp3" preload="auto"></audio>
 
@@ -102,6 +61,8 @@
     </div>
   </div>
 
+  <!-- ========== Extra Content Area ========== -->
+
   <section id="howToPlay" style="margin-top: 50px; color: #fff; text-align: center;">
     <h3 style="font-size: 20px; margin-bottom: 10px;">📋 How to Play</h3>
     <ol style="list-style: decimal; text-align: left; max-width: 320px; margin: 0 auto; font-size: 15px; line-height: 1.6;">
@@ -112,37 +73,46 @@
     </ol>
   </section>
 
-  <section id="promo" style="margin-top: 40px; color: #ccc; text-align: center;">
-    <h3 style="font-size: 18px;">🎁 Daily Bonus 50%</h3>
-    <p style="font-size: 14px;">Try your luck every day – exciting prizes await!</p>
-  </section>
+   <div class="image-prize-section">
+     <img id="prizeImage" src="https://i.imgur.com/Apd19xC.jpeg" alt="Prize List" />
+   </div>
+
 
   <footer style="margin-top: 40px; font-size: 13px; color: #aaa; text-align: center;">
     <p>⚠️ Each person is allowed only one scratch attempt.</p>
     <p>📸 Screenshot is mandatory to claim the prize.</p>
   </footer>
 
+  <!-- 初始化倒计时脚本，不动原代码 -->
   <script>
-    const countdownMessage = document.getElementById('countdownMessage');
-    const scratchCanvas = document.getElementById('scratchCanvas');
-
-    // 初始禁用 canvas
-    scratchCanvas.style.pointerEvents = 'none';
-
-    let seconds = 5;
-    countdownMessage.textContent = `Please wait ${seconds} seconds...`;
-
-    const timer = setInterval(() => {
-      seconds--;
-      if (seconds > 0) {
-        countdownMessage.textContent = `Please wait ${seconds} seconds...`;
-      } else {
-        clearInterval(timer);
-        countdownMessage.textContent = '✅ Ready to Scratch!';
-        countdownMessage.classList.add('ready');
-        scratchCanvas.style.pointerEvents = 'auto'; // 启用刮卡
+    (function() {
+      const countdownEl = document.getElementById('countdownMessage');
+      const canvas = document.getElementById('scratchCanvas');
+      // 计算今日是否已刮
+      const lastPlay = localStorage.getItem('lastPlayDate');
+      const today = new Date().toISOString().split('T')[0];
+      if (lastPlay === today) {
+        countdownEl.textContent = '🕛 Come back tomorrow!';
+        canvas.style.pointerEvents = 'none';
+        return;
       }
-    }, 1000);
+      // 倒计时至23:59:59再解锁，可设为秒数5秒测试
+      let seconds = 5; // 测试用，实际可改为计算至每日0点
+      canvas.style.pointerEvents = 'none';
+      countdownEl.textContent = `Please wait ${seconds} seconds...`;
+      const timer = setInterval(() => {
+        seconds--;
+        if (seconds > 0) {
+          countdownEl.textContent = `Please wait ${seconds} seconds...`;
+        } else {
+          clearInterval(timer);
+          countdownEl.textContent = '✅ Ready to Scratch!';
+          countdownEl.classList.add('ready');
+          canvas.style.pointerEvents = 'auto';
+          localStorage.setItem('lastPlayDate', today);
+        }
+      }, 1000);
+    })();
   </script>
 
   <script src="main.js"></script>
