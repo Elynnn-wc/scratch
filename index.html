@@ -78,37 +78,50 @@
     <p>📸 Screenshot is mandatory to claim the prize.</p>
   </footer>
 
-  <!-- 初始化倒计时脚本，不动原代码 -->
-  <script>
-    (function() {
-      const countdownEl = document.getElementById('countdownMessage');
-      const canvas = document.getElementById('scratchCanvas');
-      // 计算今日是否已刮
-      const lastPlay = localStorage.getItem('lastPlayDate');
-      const today = new Date().toISOString().split('T')[0];
-      if (lastPlay === today) {
-        countdownEl.textContent = '🕛 Come back tomorrow!';
-        canvas.style.pointerEvents = 'none';
+<script>
+  (function() {
+    const countdownEl = document.getElementById('countdownMessage');
+    const canvas = document.getElementById('scratchCanvas');
+    const today = new Date().toISOString().split('T')[0];
+    const lastPlay = localStorage.getItem('lastPlayDate');
+
+    // 如果今天已经玩过，直接提示并禁用
+    if (lastPlay === today) {
+      countdownEl.textContent = '🕛 Come back tomorrow!';
+      canvas.style.pointerEvents = 'none';
+      return;
+    }
+
+    // 计算距离次日零点的毫秒数
+    const now = Date.now();
+    const nextMidnight = new Date();
+    nextMidnight.setHours(24, 0, 0, 0);
+    let remaining = nextMidnight.getTime() - now;
+
+    // 开始倒计时
+    function tick() {
+      if (remaining <= 0) {
+        // 到零点，解锁并记录今天已玩
+        countdownEl.textContent = '✅ Ready to Scratch!';
+        countdownEl.classList.add('ready');
+        canvas.style.pointerEvents = 'auto';
+        localStorage.setItem('lastPlayDate', today);
         return;
       }
-      // 倒计时至23:59:59再解锁，可设为秒数5秒测试
-      let seconds = 5; // 测试用，实际可改为计算至每日0点
-      canvas.style.pointerEvents = 'none';
-      countdownEl.textContent = `Please wait ${seconds} seconds...`;
-      const timer = setInterval(() => {
-        seconds--;
-        if (seconds > 0) {
-          countdownEl.textContent = `Please wait ${seconds} seconds...`;
-        } else {
-          clearInterval(timer);
-          countdownEl.textContent = '✅ Ready to Scratch!';
-          countdownEl.classList.add('ready');
-          canvas.style.pointerEvents = 'auto';
-          localStorage.setItem('lastPlayDate', today);
-        }
-      }, 1000);
-    })();
-  </script>
+      // 格式化时分秒
+      const h = String(Math.floor(remaining / 3600000)).padStart(2, '0');
+      const m = String(Math.floor((remaining % 3600000) / 60000)).padStart(2, '0');
+      const s = String(Math.floor((remaining % 60000) / 1000)).padStart(2, '0');
+      countdownEl.textContent = `Come back in ${h}:${m}:${s}`;
+      remaining -= 1000;
+      setTimeout(tick, 1000);
+    }
+
+    // 初始状态禁用刮卡
+    canvas.style.pointerEvents = 'none';
+    tick();
+  })();
+</script>
 
   <script src="main.js"></script>
 </body>
