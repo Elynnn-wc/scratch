@@ -167,7 +167,7 @@ function startCountdown(untilTimestamp) {
     const now = Date.now();
     const diff = untilTimestamp - now;
     if (diff <= 0) {
-      countdownEl.innerText = 'You can play again now! 🎉';
+      countdownEl.innerText = '✅ Start Now!';
       countdownEl.style.color = '#4CAF50';
       canvas.style.pointerEvents = 'auto';
       scratchDisabled = false;
