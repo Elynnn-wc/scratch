@@ -24,11 +24,10 @@ const prizes = [
   { text: 'ANGPAO $88 🧧', chance: 0 }
 ];
 
-// 背景音乐设置
+// 防止重复播放背景音乐
 let bgMusicStarted = false;
 bgMusic.loop = false;
 
-// 获取奖品
 function getRandomPrize() {
   const weighted = [];
   prizes.forEach((p, i) => {
@@ -38,15 +37,12 @@ function getRandomPrize() {
   return prizes[index];
 }
 
-// 检查是否当天已玩
 let scratchDisabled = false;
 const scratchedAt = localStorage.getItem('scratchedAt');
 if (scratchedAt) {
   const elapsed = Date.now() - parseInt(scratchedAt, 10);
   const oneDay = 24 * 60 * 60 * 1000;
-  if (elapsed < oneDay) {
-    scratchDisabled = true;
-  }
+  if (elapsed < oneDay) scratchDisabled = true;
 }
 
 const selectedPrize = JSON.parse(localStorage.getItem('scratchPrize')) || getRandomPrize();
@@ -73,6 +69,7 @@ function showPopup(prize) {
   claimCode.value = code;
   claimCode.style.color = '#111';
   canvas.style.pointerEvents = 'none';
+  localStorage.setItem('scratched', 'yes');
   localStorage.setItem('scratchedAt', Date.now());
 
   const prizeLayer = document.getElementById('prizeLayer');
@@ -81,9 +78,7 @@ function showPopup(prize) {
   }
 }
 
-document.getElementById('popupClose').onclick = () => {
-  // 不允许关闭
-};
+document.getElementById('popupClose').onclick = () => {};
 
 let isDrawing = false;
 let revealed = false;
@@ -123,6 +118,7 @@ canvas.addEventListener(moveEvent, handleScratch);
 document.getElementById('secretResetArea').addEventListener('click', () => {
   resetTap++;
   if (resetTap >= 5) {
+    localStorage.removeItem('scratched');
     localStorage.removeItem('scratchedAt');
     localStorage.removeItem('scratchPrize');
     location.reload();
@@ -130,14 +126,23 @@ document.getElementById('secretResetArea').addEventListener('click', () => {
 });
 
 function initCanvas() {
-  ctx.fillStyle = '#999';
+  const grad = ctx.createRadialGradient(
+    canvas.width / 2,
+    canvas.height / 2,
+    canvas.width / 6,
+    canvas.width / 2,
+    canvas.height / 2,
+    canvas.width / 1.2
+  );
+  grad.addColorStop(0, '#ff74d4');
+  grad.addColorStop(1, '#f11010');
+  ctx.fillStyle = grad;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   if (scratchDisabled) canvas.style.pointerEvents = 'none';
 }
 
 initCanvas();
 
-// 背景音乐只播放一次
 function startBgMusicOnce() {
   if (!bgMusicStarted) {
     bgMusic.play().catch(err => console.warn("BG music play failed:", err));
@@ -152,6 +157,38 @@ if (startButton) {
   document.addEventListener('click', startBgMusicOnce, { once: true });
 }
 
-// 防止右键菜单 & 拖动
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('selectstart', e => e.preventDefault());
+
+// 倒计时功能
+function startCountdown(untilTimestamp) {
+  const countdownEl = document.getElementById('countdownMessage');
+  function updateCountdown() {
+    const now = Date.now();
+    const diff = untilTimestamp - now;
+    if (diff <= 0) {
+      countdownEl.innerText = 'You can play again now! 🎉';
+      countdownEl.style.color = '#4CAF50';
+      canvas.style.pointerEvents = 'auto';
+      scratchDisabled = false;
+      localStorage.removeItem('scratchedAt');
+      return;
+    }
+    const hours = Math.floor(diff / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+    countdownEl.innerText = `Come back in ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    requestAnimationFrame(updateCountdown);
+  }
+  updateCountdown();
+}
+
+if (scratchDisabled && scratchedAt) {
+  const nextPlayTime = parseInt(scratchedAt, 10) + 24 * 60 * 60 * 1000;
+  startCountdown(nextPlayTime);
+  const btn = document.getElementById('startButton');
+  if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+  }
+}
