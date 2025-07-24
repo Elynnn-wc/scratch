@@ -24,10 +24,11 @@ const prizes = [
   { text: 'ANGPAO $88 🧧', chance: 0 }
 ];
 
-// 防止重复播放背景音乐
+// 背景音乐设置
 let bgMusicStarted = false;
 bgMusic.loop = false;
 
+// 获取奖品
 function getRandomPrize() {
   const weighted = [];
   prizes.forEach((p, i) => {
@@ -35,6 +36,17 @@ function getRandomPrize() {
   });
   const index = weighted[Math.floor(Math.random() * weighted.length)];
   return prizes[index];
+}
+
+// 检查是否当天已玩
+let scratchDisabled = false;
+const scratchedAt = localStorage.getItem('scratchedAt');
+if (scratchedAt) {
+  const elapsed = Date.now() - parseInt(scratchedAt, 10);
+  const oneDay = 24 * 60 * 60 * 1000;
+  if (elapsed < oneDay) {
+    scratchDisabled = true;
+  }
 }
 
 const selectedPrize = JSON.parse(localStorage.getItem('scratchPrize')) || getRandomPrize();
@@ -51,19 +63,17 @@ function showPopup(prize) {
   popupPrizeImage.src = prizeImage.src;
   popup.style.display = 'flex';
 
-  // 停止背景音乐
   bgMusic.pause();
   bgMusic.currentTime = 0;
   bgMusicStarted = false;
 
-  // 播放中奖音效
   winSound.play().catch(err => console.warn("Win sound failed:", err));
 
   const code = 'RB' + Math.floor(100000 + Math.random() * 900000);
   claimCode.value = code;
   claimCode.style.color = '#111';
   canvas.style.pointerEvents = 'none';
-  localStorage.setItem('scratched', 'yes');
+  localStorage.setItem('scratchedAt', Date.now());
 
   const prizeLayer = document.getElementById('prizeLayer');
   if (prizeLayer) {
@@ -77,7 +87,6 @@ document.getElementById('popupClose').onclick = () => {
 
 let isDrawing = false;
 let revealed = false;
-let scratchDisabled = localStorage.getItem('scratched') === 'yes';
 let resetTap = 0;
 
 function handleScratch(e) {
@@ -114,7 +123,7 @@ canvas.addEventListener(moveEvent, handleScratch);
 document.getElementById('secretResetArea').addEventListener('click', () => {
   resetTap++;
   if (resetTap >= 5) {
-    localStorage.removeItem('scratched');
+    localStorage.removeItem('scratchedAt');
     localStorage.removeItem('scratchPrize');
     location.reload();
   }
@@ -128,7 +137,7 @@ function initCanvas() {
 
 initCanvas();
 
-// 背景音乐只播放一次（按钮或点击页面）
+// 背景音乐只播放一次
 function startBgMusicOnce() {
   if (!bgMusicStarted) {
     bgMusic.play().catch(err => console.warn("BG music play failed:", err));
@@ -142,13 +151,7 @@ if (startButton) {
 } else {
   document.addEventListener('click', startBgMusicOnce, { once: true });
 }
-// 防止右键菜单
-document.addEventListener('contextmenu', e => {
-  e.preventDefault();
-});
 
-// 防止选中拖动
-document.addEventListener('selectstart', e => {
-  e.preventDefault();
-});
-
+// 防止右键菜单 & 拖动
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('selectstart', e => e.preventDefault());
