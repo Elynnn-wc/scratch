@@ -24,6 +24,19 @@
     #popupClose:hover {
       color: red;
     }
+
+    #countdownMessage {
+      background: linear-gradient(135deg, #ff74d4, #f11010);
+      color: white;
+      font-weight: bold;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: 16px;
+      text-align: center;
+      margin: 20px auto;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      max-width: max-content;
+    }
   </style>
 </head>
 <body>
@@ -42,9 +55,11 @@
     <canvas id="scratchCanvas" width="300" height="150"></canvas>
   </div>
 
+  <div id="countdownMessage"></div>
+
   <button id="resetBtn">Reset</button>
   <div id="secretResetArea"></div>
-  
+
   <audio id="bgMusic" src="https://github.com/Elynnn-wc/my-music/raw/refs/heads/main/Tuning%20No.2.mp3" loop></audio>
   <audio id="winSound" src="https://github.com/Elynnn-wc/my-music/raw/refs/heads/main/brawl-stars-win-winning-sounds-sound-effect-brawl-stars-hd-sound-effects.mp3" preload="auto"></audio>
 
