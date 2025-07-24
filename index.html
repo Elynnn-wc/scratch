@@ -29,16 +29,17 @@
       <p id="prizeText" oncontextmenu="return false;"><strong></strong></p>
     </div>
     <canvas id="scratchCanvas" width="300" height="150"></canvas>
-
-    <!-- 倒计时提示区 -->
-    <div id="countdownBox">
-      <p id="countdownMessage">Checking availability...</p>
-    </div>
+    <!-- 注意：这里已删除倒计时区块 -->
   </div>
 
   <button id="resetBtn">Reset</button>
   <div id="secretResetArea"></div>
   
+  <!-- ↓↓↓ 倒计时区块已移到这里 ↓↓↓ -->
+  <div id="countdownBox">
+    <p id="countdownMessage">Checking availability...</p>
+  </div>
+
   <audio id="bgMusic" src="https://github.com/Elynnn-wc/my-music/raw/refs/heads/main/Tuning%20No.2.mp3" loop></audio>
   <audio id="winSound" src="https://github.com/Elynnn-wc/my-music/raw/refs/heads/main/brawl-stars-win-winning-sounds-sound-effect-brawl-stars-hd-sound-effects.mp3" preload="auto"></audio>
 
@@ -62,7 +63,6 @@
   </div>
 
   <!-- ========== Extra Content Area ========== -->
-
   <section id="howToPlay" style="margin-top: 50px; color: #fff; text-align: center;">
     <h3 style="font-size: 20px; margin-bottom: 10px;">📋 How to Play</h3>
     <ol style="list-style: decimal; text-align: left; max-width: 320px; margin: 0 auto; font-size: 15px; line-height: 1.6;">
@@ -78,50 +78,44 @@
     <p>📸 Screenshot is mandatory to claim the prize.</p>
   </footer>
 
-<script>
-  (function() {
-    const countdownEl = document.getElementById('countdownMessage');
-    const canvas = document.getElementById('scratchCanvas');
-    const today = new Date().toISOString().split('T')[0];
-    const lastPlay = localStorage.getItem('lastPlayDate');
+  <script>
+    (function() {
+      const countdownEl = document.getElementById('countdownMessage');
+      const canvas = document.getElementById('scratchCanvas');
+      const today = new Date().toISOString().split('T')[0];
+      const lastPlay = localStorage.getItem('lastPlayDate');
 
-    // 如果今天已经玩过，直接提示并禁用
-    if (lastPlay === today) {
-      countdownEl.textContent = '🕛 Come back tomorrow!';
-      canvas.style.pointerEvents = 'none';
-      return;
-    }
-
-    // 计算距离次日零点的毫秒数
-    const now = Date.now();
-    const nextMidnight = new Date();
-    nextMidnight.setHours(24, 0, 0, 0);
-    let remaining = nextMidnight.getTime() - now;
-
-    // 开始倒计时
-    function tick() {
-      if (remaining <= 0) {
-        // 到零点，解锁并记录今天已玩
-        countdownEl.textContent = '✅ Ready to Scratch!';
-        countdownEl.classList.add('ready');
-        canvas.style.pointerEvents = 'auto';
-        localStorage.setItem('lastPlayDate', today);
+      if (lastPlay === today) {
+        countdownEl.textContent = '🕛 Come back tomorrow!';
+        canvas.style.pointerEvents = 'none';
         return;
       }
-      // 格式化时分秒
-      const h = String(Math.floor(remaining / 3600000)).padStart(2, '0');
-      const m = String(Math.floor((remaining % 3600000) / 60000)).padStart(2, '0');
-      const s = String(Math.floor((remaining % 60000) / 1000)).padStart(2, '0');
-      countdownEl.textContent = `Come back in ${h}:${m}:${s}`;
-      remaining -= 1000;
-      setTimeout(tick, 1000);
-    }
 
-    // 初始状态禁用刮卡
-    canvas.style.pointerEvents = 'none';
-    tick();
-  })();
-</script>
+      const now = Date.now();
+      const nextMidnight = new Date();
+      nextMidnight.setHours(24, 0, 0, 0);
+      let remaining = nextMidnight.getTime() - now;
+
+      function tick() {
+        if (remaining <= 0) {
+          countdownEl.textContent = '✅ Ready to Scratch!';
+          countdownEl.classList.add('ready');
+          canvas.style.pointerEvents = 'auto';
+          localStorage.setItem('lastPlayDate', today);
+          return;
+        }
+        const h = String(Math.floor(remaining / 3600000)).padStart(2, '0');
+        const m = String(Math.floor((remaining % 3600000) / 60000)).padStart(2, '0');
+        const s = String(Math.floor((remaining % 60000) / 1000)).padStart(2, '0');
+        countdownEl.textContent = `Come back in ${h}:${m}:${s}`;
+        remaining -= 1000;
+        setTimeout(tick, 1000);
+      }
+
+      canvas.style.pointerEvents = 'none';
+      tick();
+    })();
+  </script>
 
   <script src="main.js"></script>
 </body>
