@@ -18,8 +18,8 @@ const claimCode = document.getElementById('claimCode');
 const prizes = [
   { text: 'ANGPAO $3 🧧', chance: 0 },
   { text: 'ANGPAO $5 🧧', chance: 0 },
-  { text: 'ANGPAO $8 🧧', chance: 80 },
-  { text: 'ANGPAO $12 🧧', chance: 20 },
+  { text: 'ANGPAO $8 🧧', chance: 90 },
+  { text: 'ANGPAO $12 🧧', chance: 10 },
   { text: 'ANGPAO $68 🧧', chance: 0 },
   { text: 'ANGPAO $88 🧧', chance: 0 }
 ];
