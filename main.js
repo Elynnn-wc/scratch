@@ -14,6 +14,7 @@ const prizeText = document.getElementById('prizeText');
 const winSound = document.getElementById('winSound');
 const bgMusic = document.getElementById('bgMusic');
 const claimCode = document.getElementById('claimCode');
+const countdownEl = document.getElementById('countdownMessage');
 
 const prizes = [
   { text: 'ANGPAO $3 🧧', chance: 0 },
@@ -24,7 +25,6 @@ const prizes = [
   { text: 'ANGPAO $88 🧧', chance: 0 }
 ];
 
-// 防止重复播放背景音乐
 let bgMusicStarted = false;
 bgMusic.loop = false;
 
@@ -38,11 +38,13 @@ function getRandomPrize() {
 }
 
 let scratchDisabled = false;
+const now = new Date();
+const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+const nextMidnight = todayMidnight + 24 * 60 * 60 * 1000;
+
 const scratchedAt = localStorage.getItem('scratchedAt');
-if (scratchedAt) {
-  const elapsed = Date.now() - parseInt(scratchedAt, 10);
-  const oneDay = 24 * 60 * 60 * 1000;
-  if (elapsed < oneDay) scratchDisabled = true;
+if (scratchedAt && parseInt(scratchedAt, 10) >= todayMidnight) {
+  scratchDisabled = true;
 }
 
 const selectedPrize = JSON.parse(localStorage.getItem('scratchPrize')) || getRandomPrize();
@@ -160,14 +162,13 @@ if (startButton) {
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('selectstart', e => e.preventDefault());
 
-// 倒计时功能
-function startCountdown(untilTimestamp) {
-  const countdownEl = document.getElementById('countdownMessage');
+// ✅ 每日00:00倒计时逻辑
+function startCountdown(toTimestamp) {
   function updateCountdown() {
     const now = Date.now();
-    const diff = untilTimestamp - now;
+    const diff = toTimestamp - now;
     if (diff <= 0) {
-      countdownEl.innerText = '✅ Start Now!';
+      countdownEl.innerText = '✅ Ready to Scratch!';
       countdownEl.style.color = '#4CAF50';
       canvas.style.pointerEvents = 'auto';
       scratchDisabled = false;
@@ -184,11 +185,5 @@ function startCountdown(untilTimestamp) {
 }
 
 if (scratchDisabled && scratchedAt) {
-  const nextPlayTime = parseInt(scratchedAt, 10) + 24 * 60 * 60 * 1000;
-  startCountdown(nextPlayTime);
-  const btn = document.getElementById('startButton');
-  if (btn) {
-    btn.disabled = true;
-    btn.style.opacity = '0.5';
-  }
+  startCountdown(nextMidnight);
 }
