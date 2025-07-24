@@ -78,44 +78,52 @@
     <p>📸 Screenshot is mandatory to claim the prize.</p>
   </footer>
 
-  <script>
-    (function() {
-      const countdownEl = document.getElementById('countdownMessage');
-      const canvas = document.getElementById('scratchCanvas');
-      const today = new Date().toISOString().split('T')[0];
-      const lastPlay = localStorage.getItem('lastPlayDate');
+<script>
+  (function() {
+    const countdownEl = document.getElementById('countdownMessage');
+    const canvas = document.getElementById('scratchCanvas');
 
-      if (lastPlay === today) {
-        countdownEl.textContent = '🕛 Come back tomorrow!';
-        canvas.style.pointerEvents = 'none';
+    // 1) 计算今天日期字符串，以及今天零点和明天零点的时间戳
+    const now = Date.now();
+    const todayStr = new Date(now).toISOString().split('T')[0];
+    const todayMidnight = new Date(todayStr).getTime();
+    const nextMidnight = todayMidnight + 24*60*60*1000;
+
+    // 2) 读取上次游戏日期
+    const lastPlay = localStorage.getItem('lastPlayDate');
+
+    // 3) 如果本地记录是“今天”并且现在还没到明天零点 → 禁用
+    if (lastPlay === todayStr && now < nextMidnight) {
+      countdownEl.textContent = '🕛 Come back tomorrow!';
+      canvas.style.pointerEvents = 'none';
+      return;
+    }
+    // 4) 否则（要么今天没玩过，要么已经跨过了零点），删除旧标记，开始倒计时
+    localStorage.removeItem('lastPlayDate');
+    canvas.style.pointerEvents = 'none';
+
+    // 5) 倒计时到 nextMidnight
+    let remaining = nextMidnight - now;
+    function tick() {
+      if (remaining <= 0) {
+        countdownEl.textContent = '✅ Ready to Scratch!';
+        countdownEl.classList.add('ready');
+        canvas.style.pointerEvents = 'auto';
+        // 记录今天已玩
+        localStorage.setItem('lastPlayDate', todayStr);
         return;
       }
+      const h = String(Math.floor(remaining/3600000)).padStart(2,'0');
+      const m = String(Math.floor((remaining%3600000)/60000)).padStart(2,'0');
+      const s = String(Math.floor((remaining%60000)/1000)).padStart(2,'0');
+      countdownEl.textContent = `Come back in ${h}:${m}:${s}`;
+      remaining -= 1000;
+      setTimeout(tick, 1000);
+    }
 
-      const now = Date.now();
-      const nextMidnight = new Date();
-      nextMidnight.setHours(24, 0, 0, 0);
-      let remaining = nextMidnight.getTime() - now;
-
-      function tick() {
-        if (remaining <= 0) {
-          countdownEl.textContent = '✅ Ready to Scratch!';
-          countdownEl.classList.add('ready');
-          canvas.style.pointerEvents = 'auto';
-          localStorage.setItem('lastPlayDate', today);
-          return;
-        }
-        const h = String(Math.floor(remaining / 3600000)).padStart(2, '0');
-        const m = String(Math.floor((remaining % 3600000) / 60000)).padStart(2, '0');
-        const s = String(Math.floor((remaining % 60000) / 1000)).padStart(2, '0');
-        countdownEl.textContent = `Come back in ${h}:${m}:${s}`;
-        remaining -= 1000;
-        setTimeout(tick, 1000);
-      }
-
-      canvas.style.pointerEvents = 'none';
-      tick();
-    })();
-  </script>
+    tick();
+  })();
+</script>
 
   <script src="main.js"></script>
 </body>
