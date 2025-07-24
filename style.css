@@ -190,8 +190,11 @@ header h1 {
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 #countdownBox {
-  margin-top: 20px;
-  text-align: center;
+  position: absolute;
+  bottom: -45px;     /* 根据 #countdownMessage 的高度微调 */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
 }
 
 #countdownMessage {
