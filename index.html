@@ -25,6 +25,12 @@
       color: red;
     }
 
+    #countdownBox {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
     #countdownMessage {
       background: linear-gradient(135deg, #ff74d4, #f11010);
       color: white;
@@ -33,7 +39,6 @@
       border-radius: 50px;
       font-size: 16px;
       text-align: center;
-      margin: 20px auto;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
       max-width: max-content;
     }
@@ -65,9 +70,12 @@
       <p id="prizeText" oncontextmenu="return false;"><strong></strong></p>
     </div>
     <canvas id="scratchCanvas" width="300" height="150"></canvas>
-  </div>
 
-  <div id="countdownMessage"></div>
+    <!-- 插入倒计时提示区域 -->
+    <div id="countdownBox">
+      <p id="countdownMessage">Checking availability...</p>
+    </div>
+  </div>
 
   <button id="resetBtn">Reset</button>
   <div id="secretResetArea"></div>
@@ -113,6 +121,29 @@
     <p>⚠️ Each person is allowed only one scratch attempt.</p>
     <p>📸 Screenshot is mandatory to claim the prize.</p>
   </footer>
+
+  <script>
+    const countdownMessage = document.getElementById('countdownMessage');
+    const scratchCanvas = document.getElementById('scratchCanvas');
+
+    // 初始禁用 canvas
+    scratchCanvas.style.pointerEvents = 'none';
+
+    let seconds = 5;
+    countdownMessage.textContent = `Please wait ${seconds} seconds...`;
+
+    const timer = setInterval(() => {
+      seconds--;
+      if (seconds > 0) {
+        countdownMessage.textContent = `Please wait ${seconds} seconds...`;
+      } else {
+        clearInterval(timer);
+        countdownMessage.textContent = '✅ Ready to Scratch!';
+        countdownMessage.classList.add('ready');
+        scratchCanvas.style.pointerEvents = 'auto'; // 启用刮卡
+      }
+    }, 1000);
+  </script>
 
   <script src="main.js"></script>
 </body>
