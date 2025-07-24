@@ -1,150 +1,213 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scratch & Win</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    #popupBox {
-      position: relative;
-    }
+/* 全局基础 */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #121212;
+  color: #fff;
+  text-align: center;
+}
 
-    #popupClose {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 24px;
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
-    }
+header {
+  padding: 20px 10px;
+  background: linear-gradient(to right, #8e2de2, #4a00e0);
+}
 
-    #popupClose:hover {
-      color: red;
-    }
+header img {
+  width: 160px;
+  margin-bottom: 10px;
+}
 
-    #countdownBox {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
+h1 {
+  font-size: 28px;
+  margin: 0;
+}
 
-    #countdownMessage {
-      background: linear-gradient(135deg, #ff74d4, #f11010);
-      color: white;
-      font-weight: bold;
-      padding: 8px 18px;
-      border-radius: 50px;
-      font-size: 16px;
-      text-align: center;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-      max-width: max-content;
-    }
+/* 说明文字 */
+#instruction {
+  margin: 20px auto 10px;
+  font-size: 16px;
+  color: #ffcc00;
+}
 
-    #countdownMessage.ready {
-      background: #00cc66;
-      color: white;
-      animation: pulse 1.5s infinite;
-    }
+/* 刮刮卡区 */
+#scratchContainer {
+  position: relative;
+  margin: 20px auto;
+  width: 300px;
+  height: 150px;
+  background-color: #222;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
 
-    @keyframes pulse {
-      0% { transform: scale(1); box-shadow: 0 0 0 rgba(0, 204, 102, 0.7); }
-      50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(0, 204, 102, 0.9); }
-      100% { transform: scale(1); box-shadow: 0 0 0 rgba(0, 204, 102, 0.7); }
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <img src="https://royalebet.net/front/include/images/royalebet.png" alt="Company Logo">
-    <h1>🎉 Scratch & Win 🧧 </h1>
-  </header>
+#prizeLayer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
 
-  <p id="instruction">👉 Use your finger to scratch and reveal!</p>
+#prizeImage {
+  width: 80px;
+  height: auto;
+  margin-bottom: 8px;
+}
 
-  <div id="scratchContainer">
-    <div id="prizeLayer">
-      <img id="prizeImage" src="https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png" alt="Prize" draggable="false" oncontextmenu="return false;">
-      <p id="prizeText" oncontextmenu="return false;"><strong></strong></p>
-    </div>
-    <canvas id="scratchCanvas" width="300" height="150"></canvas>
+#prizeText {
+  font-size: 18px;
+  font-weight: bold;
+  color: gold;
+}
 
-    <!-- 插入倒计时提示区域 -->
-    <div id="countdownBox">
-      <p id="countdownMessage">Checking availability...</p>
-    </div>
-  </div>
+canvas#scratchCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  border-radius: 12px;
+  cursor: pointer;
+}
 
-  <button id="resetBtn">Reset</button>
-  <div id="secretResetArea"></div>
+/* 倒计时提示 */
+#countdownMessage {
+  background: linear-gradient(135deg, #ff74d4, #f11010);
+  color: white;
+  font-weight: bold;
+  padding: 8px 18px;
+  border-radius: 50px;
+  font-size: 16px;
+  text-align: center;
+  margin: 20px auto;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  max-width: max-content;
+}
 
-  <audio id="bgMusic" src="https://github.com/Elynnn-wc/my-music/raw/refs/heads/main/Tuning%20No.2.mp3" loop></audio>
-  <audio id="winSound" src="https://github.com/Elynnn-wc/my-music/raw/refs/heads/main/brawl-stars-win-winning-sounds-sound-effect-brawl-stars-hd-sound-effects.mp3" preload="auto"></audio>
+#countdownMessage.ready {
+  background: #00cc66;
+  color: white;
+  animation: pulse 1.5s infinite;
+}
 
-  <div id="popupOverlay">
-    <div id="popupBox">
-      <button id="popupClose">&times;</button>
-      <h2>🎉 You’ve Won a Prize!</h2>
-      <img id="popupPrizeImage" src="https://static.vecteezy.com/system/resources/thumbnails/053/236/126/small_2x/paper-pack-reward-angpao-chinese-icon-png.png" alt="Prize" />
-      <p id="popupPrizeText"><strong></strong></p>
-      <div id="claimCodeBox" style="margin-top:15px;">
-        <p style="margin-bottom:5px; font-weight:bold; color:#222;">🎟️ Claim Code:</p>
-        <div style="display:flex; justify-content:center; align-items:center;">
-          <input id="claimCode" type="text" readonly />
-          <button onclick="copyCode()" style="padding:6px 12px; font-size:14px;">Copy</button>
-        </div>
-      </div>
-      <p style="color: red; font-weight: bold; margin-top: 15px;">
-        ⚠️ Please take a screenshot and send it to admin before closing.
-      </p>
-    </div>
-  </div>
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 rgba(0, 204, 102, 0.7); }
+  50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(0, 204, 102, 0.9); }
+  100% { transform: scale(1); box-shadow: 0 0 0 rgba(0, 204, 102, 0.7); }
+}
 
-  <section id="howToPlay" style="margin-top: 50px; color: #fff; text-align: center;">
-    <h3 style="font-size: 20px; margin-bottom: 10px;">📋 How to Play</h3>
-    <ol style="list-style: decimal; text-align: left; max-width: 320px; margin: 0 auto; font-size: 15px; line-height: 1.6;">
-      <li>Put Your “Finger” at grey zone will activate the scratch card.</li>
-      <li>Scratch using your finger or mouse to reveal the prize.</li>
-      <li>Take a screenshot of your claim code after winning.</li>
-      <li>Send it to the admin to redeem your reward.</li>
-    </ol>
-  </section>
+/* 弹窗样式 */
+#popupOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
 
-  <section id="promo" style="margin-top: 40px; color: #ccc; text-align: center;">
-    <h3 style="font-size: 18px;">🎁 Daily Bonus 50%</h3>
-    <p style="font-size: 14px;">Try your luck every day – exciting prizes await!</p>
-  </section>
+#popupBox {
+  background: #222;
+  padding: 25px;
+  border-radius: 16px;
+  text-align: center;
+  position: relative;
+  width: 300px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
 
-  <footer style="margin-top: 40px; font-size: 13px; color: #aaa; text-align: center;">
-    <p>⚠️ Each person is allowed only one scratch attempt.</p>
-    <p>📸 Screenshot is mandatory to claim the prize.</p>
-  </footer>
+#popupPrizeImage {
+  width: 80px;
+  margin: 10px 0;
+}
 
-  <script>
-    const countdownMessage = document.getElementById('countdownMessage');
-    const scratchCanvas = document.getElementById('scratchCanvas');
+#popupPrizeText {
+  font-size: 20px;
+  color: #ffd700;
+  font-weight: bold;
+}
 
-    // 初始禁用 canvas
-    scratchCanvas.style.pointerEvents = 'none';
+#popupClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
 
-    let seconds = 5;
-    countdownMessage.textContent = `Please wait ${seconds} seconds...`;
+#popupClose:hover {
+  color: red;
+}
 
-    const timer = setInterval(() => {
-      seconds--;
-      if (seconds > 0) {
-        countdownMessage.textContent = `Please wait ${seconds} seconds...`;
-      } else {
-        clearInterval(timer);
-        countdownMessage.textContent = '✅ Ready to Scratch!';
-        countdownMessage.classList.add('ready');
-        scratchCanvas.style.pointerEvents = 'auto'; // 启用刮卡
-      }
-    }, 1000);
-  </script>
+#claimCode {
+  font-size: 16px;
+  padding: 6px;
+  width: 120px;
+  margin-right: 10px;
+  border-radius: 6px;
+  border: none;
+  text-align: center;
+}
 
-  <script src="main.js"></script>
-</body>
-</html>
+button {
+  background: #ff0066;
+  border: none;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 15px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: #cc0052;
+}
+
+/* How to Play & Promo */
+section#howToPlay,
+section#promo {
+  max-width: 360px;
+  margin: 30px auto;
+  color: #eee;
+}
+
+section#howToPlay h3,
+section#promo h3 {
+  color: #ffcc00;
+  margin-bottom: 10px;
+}
+
+section#howToPlay ol {
+  text-align: left;
+  font-size: 15px;
+  line-height: 1.6;
+  padding-left: 20px;
+}
+
+section#promo p {
+  font-size: 14px;
+}
+
+/* Footer */
+footer {
+  margin-top: 30px;
+  color: #aaa;
+  font-size: 13px;
+  padding: 20px;
+}
